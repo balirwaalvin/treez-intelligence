@@ -1,0 +1,8 @@
+{
+  "name": "TREEZ INTELLIGENCE",
+  "description": "A next-generation multimodal AI platform featuring advanced chat, real-time voice interaction, and creative media generation.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
