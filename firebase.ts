@@ -6,14 +6,15 @@ import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateD
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
 // Your web app's Firebase configuration
+// These values are read from environment variables for security
 const firebaseConfig = {
-  apiKey: "AIzaSyBRetXVRyqNerPgAJ9yYkEUrXpTuh8t0aQ",
-  authDomain: "treez-intelligence.firebaseapp.com",
-  projectId: "treez-intelligence",
-  storageBucket: "treez-intelligence.firebasestorage.app",
-  messagingSenderId: "456969015230",
-  appId: "1:456969015230:web:573217cd67d3c5814933ef",
-  measurementId: "G-T1CH4KY1MZ"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase

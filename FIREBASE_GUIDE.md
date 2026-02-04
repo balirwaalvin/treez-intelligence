@@ -25,18 +25,51 @@ Firebase has been successfully integrated into your Treez Intelligence platform 
 
 ---
 
+## 🔒 Security Configuration
+
+### Environment Variables Setup
+
+All sensitive Firebase credentials are stored in `.env.local` (which is gitignored for security).
+
+**To set up:**
+
+1. Copy `.env.example` to `.env.local`:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. Fill in your Firebase credentials in `.env.local`:
+   ```env
+   VITE_FIREBASE_API_KEY=your_actual_api_key
+   VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=your-project-id
+   VITE_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   VITE_FIREBASE_APP_ID=your_app_id
+   VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+   ```
+
+3. Get your Firebase config from:
+   - Firebase Console → Project Settings → General → Your apps → Web app
+
+**Important:** Never commit `.env.local` to version control!
+
+---
+
 ## 📁 Files Created
 
 ### Core Firebase Configuration
-- **`firebase.ts`** - Firebase initialization and service exports
+- **`firebase.ts`** - Firebase initialization using environment variables
 - **`services/firebase.ts`** - Firebase service layer with helper functions
 - **`contexts/AuthContext.tsx`** - React Auth context provider
 - **`components/Auth.tsx`** - Authentication UI components
+- **`.env.example`** - Template for environment variables (safe to commit)
 
 ### Updated Files
 - **`App.tsx`** - Added AuthButton in header
 - **`index.tsx`** - Wrapped with AuthProvider
 - **`package.json`** - Added firebase dependency
+- **`.env.local`** - Contains actual API keys (gitignored)
 
 ---
 
