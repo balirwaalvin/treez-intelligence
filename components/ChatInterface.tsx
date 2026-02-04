@@ -163,6 +163,13 @@ export const ChatInterface: React.FC = () => {
 
   // --- Render Functions ---
 
+  const getGreeting = () => {
+    const hours = new Date().getHours();
+    if (hours < 12) return "Good Morning";
+    if (hours < 18) return "Good Afternoon";
+    return "Good Evening";
+  };
+
   const renderWelcomeDashboard = () => (
     <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 animate-fade-in relative z-10">
         
@@ -170,45 +177,52 @@ export const ChatInterface: React.FC = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-treez-secondary/20 rounded-full blur-[120px] -z-10 animate-pulse-slow pointer-events-none"></div>
 
         {/* Greetings */}
-        <div className="text-left w-full max-w-3xl mb-10 space-y-2">
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-treez-accent to-treez-secondary">Treez</span>
-            </h1>
-            <h2 className="text-2xl md:text-3xl font-medium text-gray-400">The beginning of something new.</h2>
+        <div className="text-left w-full max-w-3xl mb-12 space-y-1 pl-2">
+           <div className="flex items-center gap-3 mb-2">
+               <Sparkles className="text-treez-accent" size={24} />
+               <h2 className="text-2xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-treez-accent to-purple-400">
+                    {getGreeting()}, TREEZ
+               </h2>
+           </div>
+           <h1 className="text-5xl md:text-6xl font-semibold tracking-tight text-white mb-2">
+               Where should we start?
+           </h1>
         </div>
 
         {/* Central Input Capsule */}
         <div className="w-full max-w-3xl relative group">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-treez-accent to-treez-secondary rounded-[2rem] opacity-30 group-hover:opacity-60 transition duration-500 blur"></div>
-            <div className="relative bg-[#0a0a16] rounded-[1.8rem] p-4 flex flex-col gap-2 shadow-2xl input-glow border border-white/10 transition-all duration-300">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-treez-accent/50 to-purple-500/50 rounded-full opacity-20 group-hover:opacity-40 transition duration-500 blur-md"></div>
+            <div className={`relative bg-[#1e1e2f] rounded-[2rem] flex flex-col shadow-2xl transition-all duration-300 border border-white/10 ${attachment ? 'rounded-[1.5rem] p-4' : 'h-[72px] justify-center px-6'}`}>
                 
                 {attachment && (
-                  <div className="relative w-20 h-20 mb-2 rounded-lg overflow-hidden border border-treez-accent/50 group-attachment">
+                  <div className="relative w-20 h-20 mb-3 rounded-xl overflow-hidden border border-treez-accent/30 group-attachment ml-2 mt-2">
                     <img src={`data:${attachment.mimeType};base64,${attachment.base64}`} alt="Attachment" className="w-full h-full object-cover" />
                     <button 
                       onClick={() => setAttachment(null)}
-                      className="absolute top-0.5 right-0.5 bg-black/50 rounded-full p-0.5 hover:bg-red-500/80 transition-colors"
+                      className="absolute top-1 right-1 bg-black/60 backdrop-blur-md rounded-full p-1 hover:bg-red-500/80 transition-colors"
                     >
-                      <XIcon size={14} className="text-white" />
+                      <XIcon size={12} className="text-white" />
                     </button>
                   </div>
                 )}
 
-                <textarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSendMessage();
-                        }
-                    }}
-                    placeholder="Message Treez..."
-                    className="w-full bg-transparent border-none focus:ring-0 text-white placeholder-gray-500 text-lg resize-none min-h-[60px] max-h-[200px]"
-                />
-                
-                <div className="flex items-center justify-between mt-2 px-1">
-                    <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4 w-full">
+                   {/* Input Field */}
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleSendMessage();
+                            }
+                        }}
+                        placeholder="Ask TREEZ"
+                        className="flex-1 bg-transparent border-none focus:ring-0 text-white placeholder-gray-400 text-lg h-full py-2"
+                    />
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 shrink-0">
                         <input 
                           type="file" 
                           ref={fileInputRef} 
@@ -217,29 +231,26 @@ export const ChatInterface: React.FC = () => {
                           onChange={handleFileSelect} 
                         />
                         <button 
+                          onClick={() => handleImageGeneration()} 
+                          disabled={!input.trim()}
+                          className="p-2.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-treez-accent transition-colors hidden sm:block"
+                          title="Generate Image"
+                        >
+                            <ImageIcon size={20} />
+                        </button>
+                         <button 
                           onClick={() => fileInputRef.current?.click()}
-                          className={`p-2 rounded-full hover:bg-white/10 transition-colors ${attachment ? 'text-treez-accent' : 'text-gray-400 hover:text-white'}`}
+                          className={`p-2.5 rounded-full hover:bg-white/10 transition-colors ${attachment ? 'text-treez-accent' : 'text-gray-400 hover:text-white'}`}
                         >
                             <Plus size={20} />
                         </button>
-                        <button 
-                            onClick={() => handleImageGeneration()} 
-                            disabled={!input.trim()}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-treez-accent transition-colors text-sm font-medium"
-                        >
-                            <ImageIcon size={18} />
-                            <span>Create image</span>
-                        </button>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                        <button className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+                        <button className="p-2.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
                             <Mic size={20} />
                         </button>
-                        <button 
+                         <button 
                              onClick={() => handleSendMessage()}
                              disabled={(!input.trim() && !attachment)}
-                             className={`p-2 rounded-full transition-all duration-300 ${input.trim() || attachment ? 'bg-white text-black hover:bg-gray-200 shadow-[0_0_15px_rgba(255,255,255,0.4)]' : 'bg-white/10 text-gray-500'}`}
+                             className={`p-2.5 rounded-full transition-all duration-300 ml-1 ${input.trim() || attachment ? 'bg-white text-black hover:bg-gray-200' : 'bg-white/5 text-gray-600'}`}
                         >
                             <Send size={18} className={(input.trim() || attachment) ? "translate-x-0.5 translate-y-0.5" : ""} />
                         </button>
@@ -249,11 +260,11 @@ export const ChatInterface: React.FC = () => {
         </div>
 
         {/* Quick Actions / Suggestions */}
-        <div className="flex flex-wrap justify-center gap-3 mt-8 w-full max-w-3xl animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <SuggestionChip icon={PenTool} label="Creative Writing" prompt="Write a short sci-fi story about a robot discovering emotions." />
-            <SuggestionChip icon={Code} label="Code Assistant" prompt="Write a Python script to visualize stock market data." />
-            <SuggestionChip icon={Lightbulb} label="Brainstorm" prompt="Give me 5 unique ideas for a mobile app start-up." />
-            <SuggestionChip icon={Compass} label="Plan a Trip" prompt="Plan a 3-day itinerary for Tokyo." />
+        <div className="flex flex-wrap justify-start gap-3 mt-10 w-full max-w-3xl ml-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <SuggestionChip icon={ImageIcon} label="Create image" prompt="Create a futuristic cityscape at night with neon lights." />
+            <SuggestionChip icon={PenTool} label="Help me write" prompt="Write a professional email to follow up on a job application." />
+            <SuggestionChip icon={Lightbulb} label="Brainstorm" prompt="Give me 5 unique ideas for a YouTube channel." />
+            <SuggestionChip icon={Code} label="Code" prompt="Write a Python script to scrape a website." />
         </div>
     </div>
   );
