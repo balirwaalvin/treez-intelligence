@@ -16,6 +16,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [chatSession, setChatSession] = useState(() => createChatSession());
   const [attachment, setAttachment] = useState<Attachment | null>(null);
+  const [canSend, setCanSend] = useState(true); // Track locally to force re-render
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -23,6 +25,42 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Check limits on mount and updates
+  useEffect(() => {
+     if (!user) {
+         setCanSend(usageService.canSendMessage(true));
+     } else {
+         setCanSend(true);
+     }
+  }, [user, messages]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = reader.result as string;
+          setAttachment({
+            name: file.name,
+            mimeType: file.type,
+            base64: base64.split(',')[1] // Remove data URL prefix
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   const handleSendMessage = async (text: string = input) => {
     if ((!text.trim() && !attachment) || isStreaming) return;
@@ -104,7 +142,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
     }
   };
 
-
   const handleImageGeneration = async (promptText: string = input) => {
      if (!promptText.trim() || isStreaming) return;
      
@@ -142,209 +179,167 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
               timestamp: new Date(),
               isStreaming: true
           }]);
-
-          // Use the secure backend service
-          const imageUrl = await generateGenesisImage(prompt);
-
-          if (imageUrl) {
+          
+          const result = await generateGenesisImage(prompt);
+          if (result.success && result.imageUrl) {
               setMessages(prev => prev.map(msg => 
-                  msg.id === modelMsgId ? { ...msg, text: 'Here is your generated image.', images: [imageUrl], isStreaming: false } : msg
+                  msg.id === modelMsgId ? {
+                      ...msg,
+                      text: `Generated image based on: "${prompt}"`,
+                      images: [result.imageUrl!],
+                      isStreaming: false
+                  } : msg
               ));
           } else {
-               throw new Error("No image returned");
+              throw new Error(result.error || "Failed to generate image");
           }
-
-      } catch (e) {
-          setMessages(prev => [...prev, { id: Date.now().toString(), role: MessageRole.SYSTEM, text: "Image generation failed.", timestamp: new Date() }]);
+      } catch (error: any) {
+          setMessages(prev => prev.map(msg => 
+              msg.isStreaming ? { ...msg, text: error.message || "Error generating image", isStreaming: false } : msg
+          ));
       } finally {
           setIsStreaming(false);
       }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        // Strip the data:image/xyz;base64, part
-        const base64Data = base64String.split(',')[1];
-        setAttachment({
-          base64: base64Data,
-          mimeType: file.type
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // --- Suggestion Chip Component ---
-  const SuggestionChip = ({ icon: Icon, label, prompt }: { icon: any, label: string, prompt: string }) => (
-    <button 
-      onClick={() => handleSendMessage(prompt)}
-      className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-treez-accent/30 transition-all duration-300 group"
-    >
-      <div className="p-1.5 rounded-full bg-treez-900/50 group-hover:bg-treez-accent/20 transition-colors">
-        <Icon size={16} className="text-treez-accent" />
-      </div>
-      <span className="text-sm font-medium text-gray-300 group-hover:text-white">{label}</span>
-    </button>
-  );
-
-  // --- Render Functions ---
-
-  const getGreeting = () => {
-    const hours = new Date().getHours();
-    if (hours < 12) return "Good Morning";
-    if (hours < 18) return "Good Afternoon";
-    return "Good Evening";
-  };
 
   const renderWelcomeDashboard = () => (
-    <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 animate-fade-in relative z-10">
-        
-        {/* Decorative Background Blur */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-treez-secondary/20 rounded-full blur-[120px] -z-10 animate-pulse-slow pointer-events-none"></div>
-
-        {/* Greetings */}
-        <div className="text-left w-full max-w-3xl mb-12 space-y-1 pl-2">
-           <div className="flex items-center gap-3 mb-2">
-               <Sparkles className="text-treez-accent" size={24} />
-               <h2 className="text-2xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-treez-accent to-purple-400">
-                    {getGreeting()}, TREEZ
-               </h2>
-           </div>
-           <h1 className="text-5xl md:text-6xl font-semibold tracking-tight text-white mb-2">
-               Where should we start?
-           </h1>
+    <div className="flex-1 flex flex-col items-center justify-center p-4 text-center animate-fade-in">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-treez-accent to-treez-secondary flex items-center justify-center mb-6 shadow-lg shadow-treez-accent/20">
+            <Bot size={32} className="text-white" />
         </div>
+        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 mb-3">
+            Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {user?.displayName ? user.displayName.split(' ')[0] : 'Guest'}
+        </h1>
+        <p className="text-gray-400 max-w-md text-lg mb-8">
+            How can I help you explore your ideas today?
+        </p>
 
-        {/* Central Input Capsule */}
-        <div className="w-full max-w-3xl relative group">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-treez-accent/50 to-purple-500/50 rounded-full opacity-20 group-hover:opacity-40 transition duration-500 blur-md"></div>
-            <div className={`relative bg-[#1e1e2f] rounded-[2rem] flex flex-col shadow-2xl transition-all duration-300 border border-white/10 ${attachment ? 'rounded-[1.5rem] p-4' : 'h-[72px] justify-center px-6'}`}>
-                
-                {attachment && (
-                  <div className="relative w-20 h-20 mb-3 rounded-xl overflow-hidden border border-treez-accent/30 group-attachment ml-2 mt-2">
-                    <img src={`data:${attachment.mimeType};base64,${attachment.base64}`} alt="Attachment" className="w-full h-full object-cover" />
-                    <button 
-                      onClick={() => setAttachment(null)}
-                      className="absolute top-1 right-1 bg-black/60 backdrop-blur-md rounded-full p-1 hover:bg-red-500/80 transition-colors"
-                    >
-                      <XIcon size={12} className="text-white" />
-                    </button>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-4 w-full">
-                   {/* Input Field */}
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                handleSendMessage();
-                            }
-                        }}
-                        placeholder="Ask TREEZ"
-                        className="flex-1 bg-transparent border-none focus:ring-0 text-white placeholder-gray-400 text-lg h-full py-2"
-                    />
-
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-2 shrink-0">
-                        <input 
-                          type="file" 
-                          ref={fileInputRef} 
-                          className="hidden" 
-                          accept="image/*" 
-                          onChange={handleFileSelect} 
-                        />
-                        <button 
-                          onClick={() => handleImageGeneration()} 
-                          disabled={!input.trim()}
-                          className="p-2.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-treez-accent transition-colors hidden sm:block"
-                          title="Generate Image"
-                        >
-                            <ImageIcon size={20} />
-                        </button>
-                         <button 
-                          onClick={() => fileInputRef.current?.click()}
-                          className={`p-2.5 rounded-full hover:bg-white/10 transition-colors ${attachment ? 'text-treez-accent' : 'text-gray-400 hover:text-white'}`}
-                        >
-                            <Plus size={20} />
-                        </button>
-                        <button className="p-2.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
-                            <Mic size={20} />
-                        </button>
-                         <button 
-                             onClick={() => handleSendMessage()}
-                             disabled={(!input.trim() && !attachment)}
-                             className={`p-2.5 rounded-full transition-all duration-300 ml-1 ${input.trim() || attachment ? 'bg-white text-black hover:bg-gray-200' : 'bg-white/5 text-gray-600'}`}
-                        >
-                            <Send size={18} className={(input.trim() || attachment) ? "translate-x-0.5 translate-y-0.5" : ""} />
-                        </button>
+        {/* Suggestion Chips */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl mb-12">
+            {[
+                { icon: Compass, text: "Plan a trip to Japan", desc: "Itinerary & tips" },
+                { icon: Code, text: "Debug React code", desc: "Find errors & fix" },
+                { icon: PenTool, text: "Write a blog post", desc: "SEO optimized" },
+                { icon: Lightbulb, text: "Brainstorm ideas", desc: "For a startup" }
+            ].map((chip, idx) => (
+                <button 
+                  key={idx}
+                  onClick={() => handleSendMessage(chip.text)}
+                  className="bg-[#13132b] hover:bg-[#1f1f3a] border border-white/5 rounded-xl p-4 text-left transition-all hover:border-treez-accent/30 group"
+                  disabled={!canSend}
+                >
+                    <div className="flex items-start gap-3">
+                        <div className="p-2 rounded-lg bg-white/5 group-hover:bg-treez-accent/10 text-gray-400 group-hover:text-treez-accent transition-colors">
+                            <chip.icon size={20} />
+                        </div>
+                        <div>
+                            <div className="font-medium text-gray-200 group-hover:text-white">{chip.text}</div>
+                            <div className="text-xs text-gray-500 mt-0.5">{chip.desc}</div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </button>
+            ))}
         </div>
+        
+        {/* Input Area */}
+         <div className="w-full max-w-2xl relative z-20">
+          <div className="bg-[#0a0a16] rounded-full p-2 border border-white/10 focus-within:border-treez-accent/50 focus-within:shadow-[0_0_20px_rgba(0,242,255,0.1)] transition-all flex items-center gap-2">
+             <button
+               onClick={() => fileInputRef.current?.click()}
+               className="p-3 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
+               title="Attach image"
+               disabled={isStreaming || !canSend}
+             >
+               <ImageIcon size={20} />
+             </button>
+             <input
+               type="file"
+               ref={fileInputRef}
+               onChange={handleFileChange}
+               accept="image/*"
+               className="hidden"
+               disabled={!canSend}
+             />
 
-        {/* Quick Actions / Suggestions */}
-        <div className="flex flex-wrap justify-start gap-3 mt-10 w-full max-w-3xl ml-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <SuggestionChip icon={ImageIcon} label="Create image" prompt="Create a futuristic cityscape at night with neon lights." />
-            <SuggestionChip icon={PenTool} label="Help me write" prompt="Write a professional email to follow up on a job application." />
-            <SuggestionChip icon={Lightbulb} label="Brainstorm" prompt="Give me 5 unique ideas for a YouTube channel." />
-            <SuggestionChip icon={Code} label="Code" prompt="Write a Python script to scrape a website." />
+             <input
+               type="text"
+               value={input}
+               onChange={(e) => setInput(e.target.value)}
+               onKeyDown={handleKeyDown}
+               placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask TREEZ..."}
+               className="flex-1 bg-transparent border-none text-white placeholder-gray-500 focus:ring-0 text-lg px-2 disabled:opacity-50 disabled:cursor-not-allowed"
+               disabled={isStreaming || !canSend}
+             />
+
+             <button
+               onClick={() => handleSendMessage()}
+               disabled={(!input.trim() && !attachment) || isStreaming || !canSend}
+               className="p-3 bg-gradient-to-r from-treez-accent to-treez-secondary text-white rounded-full shadow-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+               title="Send message"
+             >
+               {isStreaming ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+             </button>
+          </div>
+          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+             <span className="flex items-center gap-1.5">
+                <div className={`w-1.5 h-1.5 rounded-full ${user ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                {user ? "Treez Account Active" : "Guest Mode"}
+             </span>
+             <span>•</span>
+             <span>{usageService.getRemainingPrompts()} prompts remaining today</span>
+          </div>
         </div>
     </div>
   );
 
   const renderActiveChat = () => (
-    <div className="flex flex-col h-full">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6 pt-6">
+    <>
+      <div className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth">
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex gap-4 ${msg.role === MessageRole.USER ? 'flex-row-reverse' : 'flex-row'} animate-fade-in`}>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-lg ${
-              msg.role === MessageRole.USER ? 'bg-treez-secondary' : 
-              msg.role === MessageRole.SYSTEM ? 'bg-red-500' : 'bg-gradient-to-br from-treez-accent to-treez-secondary'
-            }`}>
-               {msg.role === MessageRole.USER ? <User size={20} className="text-white" /> : <Bot size={20} className="text-white" />}
-            </div>
-            
-            <div className={`max-w-[80%] rounded-2xl p-4 shadow-md ${
-              msg.role === MessageRole.USER 
-                ? 'bg-[#3a7bd5]/20 border border-[#3a7bd5]/30' 
-                : 'bg-[#13132b] border border-white/5'
-            }`}>
-              {msg.role === MessageRole.MODEL && <div className="text-xs text-treez-accent mb-2 font-semibold tracking-wider opacity-80">TREEZ</div>}
-              
-              {/* Render Attached Images for User Messages */}
-              {msg.images && msg.role === MessageRole.USER && msg.images.map((img, idx) => (
-                  <div key={idx} className="mb-3 rounded-lg overflow-hidden border border-white/20 max-w-xs">
-                      <img src={img} alt="User Attachment" className="w-full h-auto" />
-                  </div>
-              ))}
-
-              <div className="prose prose-invert prose-sm">
-                <p className="whitespace-pre-wrap leading-relaxed text-gray-100">{msg.text}</p>
-              </div>
-              
-              {/* Render Generated Images for Model Messages */}
-              {msg.images && msg.role === MessageRole.MODEL && msg.images.map((img, idx) => (
-                  <div key={idx} className="mt-3 rounded-xl overflow-hidden shadow-lg border border-white/10">
-                      <img src={img} alt="Generated" className="w-full h-auto" />
-                  </div>
-              ))}
-            </div>
+          <div 
+            key={msg.id} 
+            className={`flex gap-4 max-w-4xl mx-auto ${msg.role === MessageRole.USER ? 'flex-row-reverse' : ''} animate-slide-up`}
+          >
+             <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                msg.role === MessageRole.USER 
+                ? 'bg-treez-800' 
+                : 'bg-gradient-to-br from-treez-accent to-treez-secondary'
+             }`}>
+                {msg.role === MessageRole.USER ? (
+                    user?.photoURL ? <img src={user.photoURL} className="w-full h-full rounded-full object-cover" /> : <User size={16} className="text-gray-400" />
+                ) : (
+                    <Bot size={16} className="text-white" />
+                )}
+             </div>
+             
+             <div className={`flex flex-col gap-2 max-w-[80%] ${msg.role === MessageRole.USER ? 'items-end' : 'items-start'}`}>
+                {msg.images && msg.images.map((img, idx) => (
+                    <div key={idx} className="rounded-xl overflow-hidden border border-white/10 mb-1 max-w-sm">
+                        <img src={img} alt="User upload" className="w-full h-auto" />
+                    </div>
+                ))}
+                
+                <div className={`px-5 py-3.5 rounded-2xl text-[15px] leading-relaxed ${
+                    msg.role === MessageRole.USER 
+                    ? 'bg-[#1f1f3a] text-white rounded-tr-none' 
+                    : 'bg-[#13132b] text-gray-100 rounded-tl-none border border-white/5'
+                }`}>
+                    {msg.text}
+                    {msg.isStreaming && <span className="inline-block w-1.5 h-4 ml-1 bg-treez-accent align-middle animate-pulse"></span>}
+                </div>
+                <span className="text-[10px] text-gray-600 px-1">
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+             </div>
           </div>
         ))}
         {isStreaming && (
-            <div className="flex gap-4">
-                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-treez-accent to-treez-secondary flex items-center justify-center shrink-0">
-                    <Bot size={20} className="text-white animate-pulse" />
+            <div className="flex gap-4 max-w-4xl mx-auto">
+                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-treez-accent to-treez-secondary flex items-center justify-center shrink-0">
+                    <Bot size={16} className="text-white animate-pulse" />
                  </div>
-                 <div className="bg-[#13132b] border border-white/5 rounded-2xl p-4 flex items-center">
+                 <div className="bg-[#13132b] border border-white/5 rounded-2xl rounded-tl-none p-4 flex items-center">
                     <Loader2 className="animate-spin text-treez-accent" size={20} />
                  </div>
             </div>
@@ -352,77 +347,73 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Bottom Input Area */}
+      {/* Bottom Input Area for Active Chat */}
       <div className="p-4 bg-treez-900/90 backdrop-blur-md border-t border-white/5 z-20">
-        <div className="max-w-4xl mx-auto bg-[#0a0a16] rounded-[24px] px-4 py-2 border border-white/10 focus-within:border-treez-accent/50 focus-within:shadow-[0_0_15px_rgba(0,242,255,0.1)] transition-all flex flex-col">
+        <div className="max-w-4xl mx-auto bg-[#0a0a16] rounded-full px-2 py-2 border border-white/10 focus-within:border-treez-accent/50 focus-within:shadow-[0_0_15px_rgba(0,242,255,0.1)] transition-all flex items-center gap-2">
            
            {attachment && (
-              <div className="relative w-16 h-16 mb-2 rounded-lg overflow-hidden border border-treez-accent/50">
+              <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-treez-accent/50 ml-2">
                 <img src={`data:${attachment.mimeType};base64,${attachment.base64}`} alt="Attachment" className="w-full h-full object-cover" />
                 <button 
                   onClick={() => setAttachment(null)}
-                  className="absolute top-0.5 right-0.5 bg-black/50 rounded-full p-0.5 hover:bg-red-500/80 transition-colors"
+                  className="absolute top-0 right-0 bg-black/60 w-full h-full flex items-center justify-center hover:bg-black/80 transition-colors"
                 >
-                  <XIcon size={12} className="text-white" />
+                  <XIcon size={14} className="text-white" />
                 </button>
               </div>
             )}
 
-           <div className="flex items-center gap-2">
-             <button 
-               onClick={() => handleImageGeneration()}
-               disabled={isStreaming || !input.trim()}
-               className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-treez-accent transition-colors"
-             >
-               <ImageIcon size={20} />
-             </button>
-             
-             <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept="image/*" 
-                onChange={handleFileSelect} 
-              />
-             <button 
+            
+              <button 
                 onClick={() => fileInputRef.current?.click()}
-                className={`p-2 rounded-full hover:bg-white/10 text-gray-400 transition-colors ${attachment ? 'text-treez-accent' : 'hover:text-white'}`}
-             >
-                <Plus size={20} />
-             </button>
+                className="p-3 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                title="Attach image"
+                disabled={isStreaming || !canSend}
+              >
+                <ImageIcon size={20} />
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+                disabled={!canSend}
+              />
 
-             <input
+              <input
                type="text"
                value={input}
                onChange={(e) => setInput(e.target.value)}
-               onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-               placeholder="Message Treez..."
-               className="flex-1 bg-transparent border-none focus:ring-0 text-white placeholder-gray-400"
+               onKeyDown={handleKeyDown}
+               placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask TREEZ..."}
+               className="flex-1 bg-transparent border-none text-white placeholder-gray-500 focus:ring-0 text-base px-2 disabled:opacity-50 disabled:cursor-not-allowed"
+               disabled={isStreaming || !canSend}
              />
              
              <button
                onClick={() => handleSendMessage()}
-               disabled={isStreaming || (!input.trim() && !attachment)}
-               className={`p-2 rounded-full transition-all ${
-                 input.trim() || attachment
-                   ? 'bg-white text-black hover:bg-gray-200' 
-                   : 'bg-white/5 text-gray-500 cursor-not-allowed'
-               }`}
+               disabled={(!input.trim() && !attachment) || isStreaming || !canSend}
+               className="p-2.5 bg-gradient-to-r from-treez-accent to-treez-secondary text-white rounded-full shadow-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
              >
-               {isStreaming ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+               {isStreaming ? (
+                 <Loader2 size={18} className="animate-spin" />
+               ) : (
+                 <Send size={18} />
+               )}
              </button>
-           </div>
         </div>
         <div className="text-center mt-2">
-            <p className="text-[10px] text-gray-500">Treez can make mistakes. Check important info.</p>
+             <p className="text-[10px] text-gray-600">
+                {user ? "Standard Encryption • Private Session" : `${usageService.getRemainingPrompts()} free prompts remaining today`}
+             </p>
         </div>
       </div>
-    </div>
+    </>
   );
 
   return (
     <div className="flex flex-col h-full w-full relative overflow-hidden bg-treez-900">
-        {/* Render Dashboard if no messages, otherwise render chat */}
         {messages.length === 0 ? renderWelcomeDashboard() : renderActiveChat()}
     </div>
   );
