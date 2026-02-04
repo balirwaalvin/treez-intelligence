@@ -4,6 +4,7 @@ import { Logo } from './components/Logo';
 import { ChatInterface } from './components/ChatInterface';
 import { LiveInterface } from './components/LiveInterface';
 import { VideoInterface } from './components/VideoInterface';
+import { AuthButton } from './components/Auth';
 import { MessageSquare, Mic, Video, LayoutGrid, Settings, Menu, X, Sparkles, HelpCircle, PanelLeftClose, PanelLeft } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -149,11 +150,8 @@ const App: React.FC = () => {
                     <span>Upgrade to Pro</span>
                  </button>
                  
-                 <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 p-[2px] cursor-pointer hover:scale-105 transition-transform">
-                     <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-                         <span className="text-xs font-bold text-white">T</span>
-                     </div>
-                 </div>
+                 {/* Firebase Auth Button */}
+                 <AuthButton />
              </div>
          </header>
 
