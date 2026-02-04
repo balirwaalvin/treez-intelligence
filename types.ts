@@ -16,8 +16,8 @@ export interface ChatMessage {
 export enum AppMode {
   CHAT = 'chat',
   LIVE = 'live',
-  VISION = 'vision',
-  VIDEO = 'video'
+  VIDEO = 'video',
+  PROFILE = 'profile'
 }
 
 export interface UserPreferences {

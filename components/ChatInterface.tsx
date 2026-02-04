@@ -1,9 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, MessageRole } from '../types';
 import { createChatSession, generateGenesisImage, Attachment } from '../services/genai';
+import { usageService } from '../services/usageService';
+import { useAuth } from '../contexts/AuthContext';
 import { Send, Image as ImageIcon, Loader2, Sparkles, User, Bot, Plus, Mic, Compass, Code, PenTool, Lightbulb, X as XIcon } from 'lucide-react';
 
-export const ChatInterface: React.FC = () => {
+interface ChatInterfaceProps {
+  onOpenAuth: () => void;
+}
+
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -20,6 +27,12 @@ export const ChatInterface: React.FC = () => {
   const handleSendMessage = async (text: string = input) => {
     if ((!text.trim() && !attachment) || isStreaming) return;
 
+    // Check Usage Limits for Guests
+    if (!user && !usageService.canSendMessage(false)) {
+        onOpenAuth();
+        return;
+    }
+
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: MessageRole.USER,
@@ -33,6 +46,11 @@ export const ChatInterface: React.FC = () => {
     const currentAttachment = attachment;
     setAttachment(null); // Clear attachment immediately
     setIsStreaming(true);
+
+    // Increment Usage for Guests
+    if (!user) {
+        usageService.incrementPromptCount();
+    }
 
     try {
       // Create a placeholder for the model response
@@ -86,9 +104,16 @@ export const ChatInterface: React.FC = () => {
     }
   };
 
+
   const handleImageGeneration = async (promptText: string = input) => {
      if (!promptText.trim() || isStreaming) return;
      
+     // Check Usage Limits for Guests
+     if (!user && !usageService.canSendMessage(false)) {
+        onOpenAuth();
+        return;
+     }
+
      const prompt = promptText;
      setInput('');
      setAttachment(null);
@@ -101,6 +126,11 @@ export const ChatInterface: React.FC = () => {
       };
       setMessages(prev => [...prev, userMsg]);
       setIsStreaming(true);
+
+      // Increment Usage for Guests
+      if (!user) {
+         usageService.incrementPromptCount();
+      }
 
       try {
           // Placeholder

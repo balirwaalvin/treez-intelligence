@@ -39,6 +39,48 @@ export const authService = {
     }
   },
 
+  // Sign up with Email/Password
+  signUpWithEmail: async (email: string, password: string) => {
+    try {
+      const { createUserWithEmailAndPassword, auth } = await import('../firebase');
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      return { success: true, user: result.user };
+    } catch (error: any) {
+      console.error("Sign-Up Error:", error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  // Sign in with Email/Password
+  signInWithEmail: async (email: string, password: string) => {
+    try {
+        const { signInWithEmailAndPassword, auth } = await import('../firebase');
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        return { success: true, user: result.user };
+    } catch (error: any) {
+        console.error("Sign-In Error:", error);
+        return { success: false, error: error.message };
+    }
+  },
+
+  // Update Profile
+  updateUserProfile: async (displayName: string, photoURL?: string) => {
+    try {
+        const { updateProfile, auth } = await import('../firebase');
+        if (auth.currentUser) {
+            await updateProfile(auth.currentUser, {
+                displayName: displayName,
+                photoURL: photoURL
+            });
+            return { success: true };
+        }
+        return { success: false, error: "No user logged in" };
+    } catch (error: any) {
+        console.error("Update Profile Error:", error);
+        return { success: false, error: error.message };
+    }
+  },
+
   // Sign out
   signOut: async () => {
     try {

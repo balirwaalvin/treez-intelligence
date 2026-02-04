@@ -1,6 +1,6 @@
 // Auth Context Provider for Treez Intelligence
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { authService } from '../services/firebase';
+import { authService, userService } from '../services/firebase';
 
 interface User {
   uid: string;
@@ -13,6 +13,9 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<any>;
+  signInWithEmail: (email: string, password: string) => Promise<any>;
+  signUpWithEmail: (email: string, password: string) => Promise<any>;
+  updateProfile: (displayName: string, photoURL?: string) => Promise<any>;
   signOut: () => Promise<any>;
 }
 
@@ -20,6 +23,9 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signInWithGoogle: async () => {},
+  signInWithEmail: async () => {},
+  signUpWithEmail: async () => {},
+  updateProfile: async () => {},
   signOut: async () => {}
 });
 
@@ -37,14 +43,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Listen for auth state changes
-    const unsubscribe = authService.onAuthStateChange((firebaseUser) => {
+    const unsubscribe = authService.onAuthStateChange(async (firebaseUser) => {
       if (firebaseUser) {
-        setUser({
+        const userData = {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           displayName: firebaseUser.displayName,
           photoURL: firebaseUser.photoURL
-        });
+        };
+        setUser(userData);
+        
+        // Sync user to Firestore
+        await userService.saveUserProfile(firebaseUser.uid, userData);
       } else {
         setUser(null);
       }
@@ -55,7 +65,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signInWithGoogle = async () => {
-    const result = await authService.signInWithGoogle();
+    return await authService.signInWithGoogle();
+  };
+
+  const signInWithEmail = async (email: string, password: string) => {
+    return await authService.signInWithEmail(email, password);
+  };
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    return await authService.signUpWithEmail(email, password);
+  };
+
+  const updateProfile = async (displayName: string, photoURL?: string) => {
+    const result = await authService.updateUserProfile(displayName, photoURL);
+    if (result.success && user) {
+        setUser(prev => prev ? ({ ...prev, displayName, photoURL: photoURL || prev.photoURL }) : null);
+        // Sync update to Firestore
+        if (user.uid) {
+             await userService.saveUserProfile(user.uid, { displayName, photoURL });
+        }
+    }
     return result;
   };
 
@@ -71,6 +100,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     loading,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
+    updateProfile,
     signOut
   };
 
