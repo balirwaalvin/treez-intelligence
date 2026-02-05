@@ -4,6 +4,10 @@ import { createChatSession, generateGenesisImage, Attachment } from '../services
 import { usageService } from '../services/usageService';
 import { useAuth } from '../contexts/AuthContext';
 import { Send, Image as ImageIcon, Loader2, Sparkles, User, Bot, Plus, Mic, Compass, Code, PenTool, Lightbulb, X as XIcon } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark as atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface ChatInterfaceProps {
   onOpenAuth: () => void;
@@ -325,7 +329,57 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
                     ? 'bg-[#1f1f3a] text-white rounded-tr-none' 
                     : 'bg-[#13132b] text-gray-100 rounded-tl-none border border-white/5'
                 }`}>
-                    {msg.text}
+                    {msg.role === MessageRole.USER ? (
+                        msg.text
+                    ) : (
+                        <div className="markdown-content">
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                    code({node, inline, className, children, ...props}: any) {
+                                        const match = /language-(\w+)/.exec(className || '')
+                                        return !inline && match ? (
+                                            <div className="rounded-lg overflow-hidden my-3 border border-white/10 shadow-lg">
+                                                <div className="bg-black/30 px-4 py-2 text-xs text-gray-400 border-b border-white/10 flex justify-between items-center">
+                                                    <span>{match[1]}</span>
+                                                </div>
+                                                <SyntaxHighlighter
+                                                    style={atomOneDark}
+                                                    language={match[1]}
+                                                    PreTag="div"
+                                                    customStyle={{ margin: 0, padding: '1rem', background: '#0d0d1e' }}
+                                                    {...props}
+                                                >
+                                                    {String(children).replace(/\n$/, '')}
+                                                </SyntaxHighlighter>
+                                            </div>
+                                        ) : (
+                                            <code className={`${className} bg-white/10 px-1.5 py-0.5 rounded text-treez-accent`} {...props}>
+                                                {children}
+                                            </code>
+                                        )
+                                    },
+                                    p: ({children}) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
+                                    ul: ({children}) => <ul className="list-disc pl-4 mb-3 space-y-1">{children}</ul>,
+                                    ol: ({children}) => <ol className="list-decimal pl-4 mb-3 space-y-1">{children}</ol>,
+                                    li: ({children}) => <li className="pl-1">{children}</li>,
+                                    h1: ({children}) => <h1 className="text-xl font-bold mb-3 mt-4 first:mt-0 text-white border-b border-white/10 pb-2">{children}</h1>,
+                                    h2: ({children}) => <h2 className="text-lg font-bold mb-3 mt-4 text-gray-100">{children}</h2>,
+                                    h3: ({children}) => <h3 className="text-base font-bold mb-2 mt-3 text-gray-200">{children}</h3>,
+                                    a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-treez-accent hover:underline decoration-treez-accent/50">{children}</a>,
+                                    blockquote: ({children}) => <blockquote className="border-l-2 border-treez-accent pl-4 my-3 italic text-gray-400 bg-white/5 py-2 pr-2 rounded-r">{children}</blockquote>,
+                                    table: ({children}) => <div className="overflow-x-auto my-4 rounded-lg border border-white/10"><table className="min-w-full divide-y divide-white/10">{children}</table></div>,
+                                    thead: ({children}) => <thead className="bg-white/5">{children}</thead>,
+                                    tbody: ({children}) => <tbody className="divide-y divide-white/10">{children}</tbody>,
+                                    tr: ({children}) => <tr className="hover:bg-white/5 transition-colors">{children}</tr>,
+                                    th: ({children}) => <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">{children}</th>,
+                                    td: ({children}) => <td className="px-4 py-3 text-sm text-gray-300 whitespace-pre-wrap">{children}</td>,
+                                }}
+                            >
+                                {msg.text}
+                            </ReactMarkdown>
+                        </div>
+                    )}
                     {msg.isStreaming && <span className="inline-block w-1.5 h-4 ml-1 bg-treez-accent align-middle animate-pulse"></span>}
                 </div>
                 <span className="text-[10px] text-gray-600 px-1">
