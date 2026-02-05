@@ -6,6 +6,7 @@ import { LiveInterface } from './components/LiveInterface';
 import { VideoInterface } from './components/VideoInterface';
 import { AuthModal } from './components/AuthModal';
 import { ProfilePage } from './components/ProfilePage';
+import { SubscriptionModal } from './components/SubscriptionModal';
 import { useAuth } from './contexts/AuthContext';
 import { MessageSquare, Mic, Video, LayoutGrid, Settings, Menu, X, Sparkles, HelpCircle, PanelLeftClose, PanelLeft, Lock, UserCircle, User } from 'lucide-react';
 
@@ -14,13 +15,15 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+  const [chatSessionId, setChatSessionId] = useState(Date.now()); // Key to force reset
   
   const { user } = useAuth(); // Assuming useAuth is imported
 
   const renderContent = () => {
     switch (activeMode) {
       case AppMode.CHAT:
-        return <ChatInterface onOpenAuth={() => setIsAuthModalOpen(true)} />; // Pass prop
+        return <ChatInterface key={chatSessionId} onOpenAuth={() => setIsAuthModalOpen(true)} />; // Pass prop
       case AppMode.LIVE:
         return <LiveInterface />;
       case AppMode.VIDEO:
@@ -28,7 +31,7 @@ const App: React.FC = () => {
       case AppMode.PROFILE:
         return <ProfilePage onBack={() => setActiveMode(AppMode.CHAT)} />;
       default:
-        return <ChatInterface onOpenAuth={() => setIsAuthModalOpen(true)} />;
+        return <ChatInterface key={chatSessionId} onOpenAuth={() => setIsAuthModalOpen(true)} />;
     }
   };
   
@@ -40,6 +43,12 @@ const App: React.FC = () => {
       }
       setActiveMode(mode);
       setIsSidebarOpen(false);
+  };
+
+  const handleNewChat = () => {
+    setActiveMode(AppMode.CHAT);
+    setChatSessionId(Date.now()); // Update key to force re-render
+    setIsSidebarOpen(false);
   };
 
   const NavItem = ({ mode, icon: Icon, label }: { mode: AppMode; icon: any; label: string }) => {
@@ -73,6 +82,7 @@ const App: React.FC = () => {
     <div className="flex h-screen bg-[#050511] text-white font-sans overflow-hidden">
       
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <SubscriptionModal isOpen={isSubscriptionModalOpen} onClose={() => setIsSubscriptionModalOpen(false)} />
 
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-16 glass-panel flex items-center justify-between px-4 border-b border-white/10">
@@ -112,7 +122,7 @@ const App: React.FC = () => {
 
         <div className="px-3 py-2 flex-1 overflow-y-auto overflow-x-hidden">
           <button 
-             onClick={() => setActiveMode(AppMode.CHAT)}
+             onClick={handleNewChat}
              className={`w-full flex items-center bg-[#13132b] hover:bg-[#1f1f3a] border border-white/10 rounded-xl text-sm font-medium transition-all mb-6 group ${isCollapsed ? 'justify-center p-3 h-10 w-10 mx-auto' : 'justify-between px-4 py-3'}`}
              title="New Chat"
           >
@@ -177,9 +187,13 @@ const App: React.FC = () => {
          {/* Top Header - Floating above content */}
          <header className="absolute top-0 left-0 right-0 z-50 h-16 flex items-center justify-end px-6 pointer-events-none">
              <div className="pointer-events-auto flex items-center gap-4">
-                 <button className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-treez-secondary/20 to-purple-500/20 border border-white/10 hover:border-treez-accent/50 rounded-lg text-xs font-semibold text-treez-accent hover:text-white transition-all">
-                    <Sparkles size={14} />
-                    <span>Upgrade to Pro</span>
+                 <button 
+                    onClick={() => setIsSubscriptionModalOpen(true)}
+                    className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#0d0d1e] border border-treez-accent/30 hover:border-treez-accent/80 rounded-lg text-xs font-semibold text-white transition-all group overflow-hidden relative"
+                 >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-treez-accent/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out"></div>
+                    <Sparkles size={14} className="text-treez-accent animate-pulse" />
+                    <span className="relative z-10">Upgrade</span>
                  </button>
                  
                  {/* User Profile / Auth Toggle */}
