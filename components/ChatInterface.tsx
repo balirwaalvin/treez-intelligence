@@ -244,7 +244,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
         
         {/* Input Area */}
          <div className="w-full max-w-2xl relative z-20">
-          <div className="bg-[#0a0a16] rounded-full p-2 border border-white/10 focus-within:border-treez-accent/50 focus-within:shadow-[0_0_20px_rgba(0,242,255,0.1)] transition-all flex items-center gap-2">
+          <div className="bg-[#0a0a16] rounded-full p-2 border border-white/10 focus-within:shadow-[0_0_30px_rgba(0,242,255,0.4)] transition-all flex items-center gap-2">
              <button
                onClick={() => fileInputRef.current?.click()}
                className="p-3 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
@@ -268,7 +268,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
                onChange={(e) => setInput(e.target.value)}
                onKeyDown={handleKeyDown}
                placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask TREEZ..."}
-               className="flex-1 bg-transparent border-none text-white placeholder-gray-500 focus:ring-0 text-lg px-2 disabled:opacity-50 disabled:cursor-not-allowed"
+               className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-500 focus:ring-0 focus:outline-none text-lg px-2 disabled:opacity-50 disabled:cursor-not-allowed"
                disabled={isStreaming || !canSend}
              />
 
@@ -349,7 +349,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
 
       {/* Bottom Input Area for Active Chat */}
       <div className="p-4 bg-treez-900/90 backdrop-blur-md border-t border-white/5 z-20">
-        <div className="max-w-4xl mx-auto bg-[#0a0a16] rounded-full px-2 py-2 border border-white/10 focus-within:border-treez-accent/50 focus-within:shadow-[0_0_15px_rgba(0,242,255,0.1)] transition-all flex items-center gap-2">
+        <div className="max-w-4xl mx-auto bg-[#0a0a16] rounded-full px-2 py-2 border border-white/10 focus-within:shadow-[0_0_25px_rgba(0,242,255,0.4)] transition-all flex items-center gap-2">
            
            {attachment && (
               <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-treez-accent/50 ml-2">
@@ -387,7 +387,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
                onChange={(e) => setInput(e.target.value)}
                onKeyDown={handleKeyDown}
                placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask TREEZ..."}
-               className="flex-1 bg-transparent border-none text-white placeholder-gray-500 focus:ring-0 text-base px-2 disabled:opacity-50 disabled:cursor-not-allowed"
+               className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-500 focus:ring-0 focus:outline-none text-base px-2 disabled:opacity-50 disabled:cursor-not-allowed"
                disabled={isStreaming || !canSend}
              />
              
