@@ -14,7 +14,7 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<any>;
   signInWithEmail: (email: string, password: string) => Promise<any>;
-  signUpWithEmail: (email: string, password: string) => Promise<any>;
+  signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<any>;
   updateProfile: (displayName: string, photoURL?: string) => Promise<any>;
   signOut: () => Promise<any>;
 }
@@ -72,8 +72,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return await authService.signInWithEmail(email, password);
   };
 
-  const signUpWithEmail = async (email: string, password: string) => {
-    return await authService.signUpWithEmail(email, password);
+  const signUpWithEmail = async (email: string, password: string, displayName?: string) => {
+    const result = await authService.signUpWithEmail(email, password);
+    if (result.success && displayName && result.user) {
+        // Update display name immediately
+        await authService.updateUserProfile(displayName);
+        // Update local state with the new name
+        setUser(prev => prev ? ({ ...prev, displayName }) : null);
+        // Sync to Firestore
+        await userService.saveUserProfile(result.user.uid, { displayName, email });
+    }
+    return result;
   };
 
   const updateProfile = async (displayName: string, photoURL?: string) => {

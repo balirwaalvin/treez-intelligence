@@ -12,6 +12,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +30,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
       if (mode === 'signin') {
         result = await signInWithEmail(email, password);
       } else {
-        result = await signUpWithEmail(email, password);
+        result = await signUpWithEmail(email, password, name);
       }
 
       if (result.success) {
@@ -141,6 +142,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
              )}
 
              <div className="space-y-4">
+                {mode === 'signup' && (
+                  <div className="relative group animate-fade-in-up">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-treez-accent transition-colors" size={18} />
+                    <input
+                      type="text"
+                      required={mode === 'signup'}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Full Name"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-treez-accent/50 focus:ring-1 focus:ring-treez-accent/50 transition-all"
+                    />
+                  </div>
+                )}
+
                 <div className="relative group">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-treez-accent transition-colors" size={18} />
                   <input
