@@ -231,7 +231,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
               Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}
             </span>
             {user?.displayName && (
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-treez-accent to-treez-indigo">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-purple-400">
                 , {user.displayName.split(' ')[0]}
               </span>
             )}
