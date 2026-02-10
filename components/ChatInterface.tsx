@@ -5,6 +5,7 @@ import { usageService } from '../services/usageService';
 import { useAuth } from '../contexts/AuthContext';
 import { Send, Image as ImageIcon, Loader2, Sparkles, User, Bot, Plus, Mic, Compass, Code, PenTool, Lightbulb, X as XIcon, Brain, Zap, Globe, TrendingUp } from 'lucide-react';
 import { LogoMark } from './Logo';
+import { ThinkingAnimation } from './ThinkingAnimation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -416,12 +417,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
           </div>
         ))}
         {isStreaming && (
-            <div className="flex gap-4 max-w-4xl mx-auto">
-                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-treez-accent to-treez-secondary flex items-center justify-center shrink-0">
+            <div className="flex gap-4 max-w-4xl mx-auto animate-fade-in-up">
+                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-treez-accent to-treez-secondary flex items-center justify-center shrink-0 shadow-lg shadow-treez-accent/20">
                     <Bot size={16} className="text-white animate-pulse" />
                  </div>
-                 <div className="bg-[#13132b] border border-white/5 rounded-2xl rounded-tl-none p-4 flex items-center">
-                    <Loader2 className="animate-spin text-treez-accent" size={20} />
+                 <div className="overflow-hidden rounded-2xl rounded-tl-none">
+                    <ThinkingAnimation />
                  </div>
             </div>
         )}
