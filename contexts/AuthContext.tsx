@@ -7,6 +7,7 @@ interface User {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
+  plan: 'standard' | 'pro';
 }
 
 interface AuthContextType {
@@ -45,16 +46,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth state changes
     const unsubscribe = authService.onAuthStateChange(async (firebaseUser) => {
       if (firebaseUser) {
-        const userData = {
+        // Fetch existing profile to get plan
+        const profileResult = await userService.getUserProfile(firebaseUser.uid);
+        let userPlan: 'standard' | 'pro' = 'standard';
+
+        if (profileResult.success && profileResult.profile?.plan) {
+            userPlan = profileResult.profile.plan;
+        }
+
+        const userData: User = {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL
+          photoURL: firebaseUser.photoURL,
+          plan: userPlan
         };
         setUser(userData);
         
-        // Sync user to Firestore
-        await userService.saveUserProfile(firebaseUser.uid, userData);
+        // Sync user to Firestore (merge) with plan
+        await userService.saveUserProfile(firebaseUser.uid, { 
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+            plan: userPlan 
+        });
       } else {
         setUser(null);
       }
@@ -77,10 +92,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (result.success && displayName && result.user) {
         // Update display name immediately
         await authService.updateUserProfile(displayName);
-        // Update local state with the new name
-        setUser(prev => prev ? ({ ...prev, displayName }) : null);
-        // Sync to Firestore
-        await userService.saveUserProfile(result.user.uid, { displayName, email });
+        // Note: setUser will be handled by onAuthStateChange, but we can't easily push 'plan' there 
+        // without the refetch. Ideally onAuthStateChange handles it.
+        // Sync to Firestore with default standard plan
+        await userService.saveUserProfile(result.user.uid, { displayName, email, plan: 'standard' });
     }
     return result;
   };
@@ -88,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateProfile = async (displayName: string, photoURL?: string) => {
     const result = await authService.updateUserProfile(displayName, photoURL);
     if (result.success && user) {
+        // Update local state
         setUser(prev => prev ? ({ ...prev, displayName, photoURL: photoURL || prev.photoURL }) : null);
         // Sync update to Firestore
         if (user.uid) {

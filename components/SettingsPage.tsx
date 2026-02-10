@@ -111,9 +111,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
             <div className="flex-1 text-center md:text-left">
                 <h3 className="text-2xl font-bold text-white mb-1">{user?.displayName || 'Guest User'}</h3>
                 <p className="text-gray-400 text-sm mb-3">{user?.email || 'Sign in to sync your history'}</p>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-treez-indigo/20 border border-treez-indigo/30 text-xs font-medium text-treez-accent">
-                    <Zap size={12} className="fill-current" />
-                    {user ? 'Pro Plan Active' : 'Free Tier'}
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium ${user?.plan === 'pro' ? 'bg-treez-accent/10 border-treez-accent/30 text-treez-accent' : 'bg-gray-700/30 border-gray-600 text-gray-300'}`}>
+                    {user?.plan === 'pro' && <Zap size={12} className="fill-current" />}
+                    {user?.plan === 'pro' ? 'Pro Plan Active' : 'TREEZ Standard Plan'}
                 </div>
             </div>
 

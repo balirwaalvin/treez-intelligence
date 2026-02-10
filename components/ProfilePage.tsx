@@ -71,7 +71,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#0a0a16] text-white p-4 md:p-8 animate-fade-in">
+    <div className="h-full flex flex-col overflow-y-auto bg-[#0a0a16] text-white p-4 md:p-8 animate-fade-in custom-scrollbar">
         <div className="max-w-2xl mx-auto space-y-8">
             
             {/* Header */}
