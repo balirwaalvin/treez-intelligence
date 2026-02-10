@@ -3,7 +3,8 @@ import { ChatMessage, MessageRole } from '../types';
 import { createChatSession, generateGenesisImage, Attachment } from '../services/genai';
 import { usageService } from '../services/usageService';
 import { useAuth } from '../contexts/AuthContext';
-import { Send, Image as ImageIcon, Loader2, Sparkles, User, Bot, Plus, Mic, Compass, Code, PenTool, Lightbulb, X as XIcon } from 'lucide-react';
+import { Send, Image as ImageIcon, Loader2, Sparkles, User, Bot, Plus, Mic, Compass, Code, PenTool, Lightbulb, X as XIcon, Brain, Zap, Globe, TrendingUp } from 'lucide-react';
+import { LogoMark } from './Logo';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -208,90 +209,112 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
 
 
   const renderWelcomeDashboard = () => (
-    <div className="flex-1 flex flex-col items-center justify-center p-4 text-center animate-fade-in">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-treez-accent to-treez-secondary flex items-center justify-center mb-6 shadow-lg shadow-treez-accent/20">
-            <Bot size={32} className="text-white" />
-        </div>
-        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 mb-3">
-            Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {user?.displayName ? user.displayName.split(' ')[0] : 'Guest'}
-        </h1>
-        <p className="text-gray-400 max-w-md text-lg mb-8">
-            How can I help you explore your ideas today?
-        </p>
-
-        {/* Suggestion Chips */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl mb-12">
-            {[
-                { icon: Compass, text: "Plan a trip to Japan", desc: "Itinerary & tips" },
-                { icon: Code, text: "Debug React code", desc: "Find errors & fix" },
-                { icon: PenTool, text: "Write a blog post", desc: "SEO optimized" },
-                { icon: Lightbulb, text: "Brainstorm ideas", desc: "For a startup" }
-            ].map((chip, idx) => (
-                <button 
-                  key={idx}
-                  onClick={() => handleSendMessage(chip.text)}
-                  className="bg-[#13132b] hover:bg-[#1f1f3a] border border-white/5 rounded-xl p-4 text-left transition-all hover:border-treez-accent/30 group"
-                  disabled={!canSend}
-                >
-                    <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-lg bg-white/5 group-hover:bg-treez-accent/10 text-gray-400 group-hover:text-treez-accent transition-colors">
-                            <chip.icon size={20} />
-                        </div>
-                        <div>
-                            <div className="font-medium text-gray-200 group-hover:text-white">{chip.text}</div>
-                            <div className="text-xs text-gray-500 mt-0.5">{chip.desc}</div>
-                        </div>
-                    </div>
-                </button>
-            ))}
+    <div className="flex-1 flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
+        {/* Ambient Background */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-treez-indigo/[0.07] rounded-full blur-[120px] animate-pulse-slow" />
+          <div className="absolute top-1/2 left-1/3 -translate-x-1/2 w-[400px] h-[400px] bg-treez-accent/[0.04] rounded-full blur-[100px] animate-blob" />
+          <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-treez-purple/[0.05] rounded-full blur-[80px] animate-float" />
         </div>
         
-        {/* Input Area */}
-         <div className="w-full max-w-2xl relative z-20">
-          <div className="bg-[#0a0a16] rounded-full p-2 border border-white/10 focus-within:shadow-[0_0_30px_rgba(0,242,255,0.4)] transition-all flex items-center gap-2">
-             <button
-               onClick={() => fileInputRef.current?.click()}
-               className="p-3 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
-               title="Attach image"
-               disabled={isStreaming || !canSend}
-             >
-               <ImageIcon size={20} />
-             </button>
-             <input
-               type="file"
-               ref={fileInputRef}
-               onChange={handleFileChange}
-               accept="image/*"
-               className="hidden"
-               disabled={!canSend}
-             />
-
-             <input
-               type="text"
-               value={input}
-               onChange={(e) => setInput(e.target.value)}
-               onKeyDown={handleKeyDown}
-               placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask TREEZ..."}
-               className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-500 focus:ring-0 focus:outline-none text-lg px-2 disabled:opacity-50 disabled:cursor-not-allowed"
-               disabled={isStreaming || !canSend}
-             />
-
-             <button
-               onClick={() => handleSendMessage()}
-               disabled={(!input.trim() && !attachment) || isStreaming || !canSend}
-               className="p-3 bg-gradient-to-r from-treez-accent to-treez-secondary text-white rounded-full shadow-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-               title="Send message"
-             >
-               {isStreaming ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
-             </button>
+        <div className="relative z-10 flex flex-col items-center animate-fade-in">
+          {/* Logo Mark */}
+          <div className="mb-6 relative">
+            <div className="absolute inset-0 bg-treez-indigo/20 rounded-2xl blur-xl scale-150 animate-pulse-slow" />
+            <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0d0d2a] to-[#13132b] border border-white/[0.08] flex items-center justify-center shadow-glow-sm">
+                <LogoMark size={40} />
+            </div>
           </div>
-          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
-             <span className="flex items-center gap-1.5">
-                <div className={`w-1.5 h-1.5 rounded-full ${user ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                {user ? "Treez Account Active" : "Guest Mode"}
-             </span>
-             <span>•</span>
-             <span>{usageService.getRemainingPrompts()} prompts remaining today</span>
+          
+          <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-300">
+              Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}
+            </span>
+            {user?.displayName && (
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-treez-accent to-treez-indigo">
+                , {user.displayName.split(' ')[0]}
+              </span>
+            )}
+          </h1>
+          <p className="text-gray-400 max-w-lg text-base md:text-lg mb-10 leading-relaxed">
+              Explore ideas, generate content, and think deeper with AI.
+          </p>
+
+          {/* Suggestion Chips */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl mb-10">
+              {[
+                  { icon: Brain, text: "Analyze complex data", desc: "Deep insights", color: 'from-violet-500/10 to-purple-500/10', iconColor: 'text-violet-400 group-hover:text-violet-300' },
+                  { icon: Code, text: "Debug React code", desc: "Find & fix errors", color: 'from-cyan-500/10 to-blue-500/10', iconColor: 'text-cyan-400 group-hover:text-cyan-300' },
+                  { icon: TrendingUp, text: "Brainstorm strategies", desc: "Business growth", color: 'from-emerald-500/10 to-teal-500/10', iconColor: 'text-emerald-400 group-hover:text-emerald-300' },
+                  { icon: PenTool, text: "Write & create content", desc: "Articles & copy", color: 'from-amber-500/10 to-orange-500/10', iconColor: 'text-amber-400 group-hover:text-amber-300' }
+              ].map((chip, idx) => (
+                  <button 
+                    key={idx}
+                    onClick={() => handleSendMessage(chip.text)}
+                    className={`bg-[#0a0a18] hover:bg-[#10101f] border border-white/[0.05] hover:border-white/[0.1] rounded-xl p-4 text-left transition-all duration-300 group hover-lift`}
+                    disabled={!canSend}
+                    style={{ animationDelay: `${idx * 80}ms` }}
+                  >
+                      <div className="flex items-start gap-3">
+                          <div className={`p-2.5 rounded-xl bg-gradient-to-br ${chip.color} transition-all duration-300`}>
+                              <chip.icon size={18} className={`transition-colors ${chip.iconColor}`} />
+                          </div>
+                          <div>
+                              <div className="font-medium text-sm text-gray-200 group-hover:text-white transition-colors">{chip.text}</div>
+                              <div className="text-[11px] text-gray-500 mt-0.5">{chip.desc}</div>
+                          </div>
+                      </div>
+                  </button>
+              ))}
+          </div>
+          
+          {/* Input Area */}
+          <div className="w-full max-w-2xl relative z-20">
+            <div className="bg-[#0a0a16] rounded-2xl p-2 border border-white/[0.06] focus-within:border-treez-indigo/30 focus-within:shadow-[0_0_40px_rgba(99,102,241,0.12)] transition-all duration-300 flex items-center gap-2">
+               <button
+                 onClick={() => fileInputRef.current?.click()}
+                 className="p-3 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-xl transition-all"
+                 title="Attach image"
+                 disabled={isStreaming || !canSend}
+               >
+                 <ImageIcon size={20} />
+               </button>
+               <input
+                 type="file"
+                 ref={fileInputRef}
+                 onChange={handleFileChange}
+                 accept="image/*"
+                 className="hidden"
+                 disabled={!canSend}
+               />
+
+               <input
+                 type="text"
+                 value={input}
+                 onChange={(e) => setInput(e.target.value)}
+                 onKeyDown={handleKeyDown}
+                 placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask Treez anything..."}
+                 className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-600 focus:ring-0 focus:outline-none text-base px-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                 disabled={isStreaming || !canSend}
+               />
+
+               <button
+                 onClick={() => handleSendMessage()}
+                 disabled={(!input.trim() && !attachment) || isStreaming || !canSend}
+                 className="p-3 bg-gradient-to-r from-treez-indigo to-treez-purple text-white rounded-xl shadow-lg hover:shadow-glow-md disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300"
+                 title="Send message"
+               >
+                 {isStreaming ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+               </button>
+            </div>
+            <div className="mt-3 flex items-center justify-center gap-3 text-xs text-gray-600">
+               <span className="flex items-center gap-1.5">
+                  <div className={`w-1.5 h-1.5 rounded-full ${user ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]' : 'bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.3)]'}`} />
+                  {user ? "Treez Pro" : "Guest Mode"}
+               </span>
+               <span className="text-gray-700">·</span>
+               <span>{usageService.getRemainingPrompts()} prompts remaining</span>
+            </div>
           </div>
         </div>
     </div>
@@ -402,11 +425,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
       </div>
 
       {/* Bottom Input Area for Active Chat */}
-      <div className="p-4 bg-treez-900/90 backdrop-blur-md border-t border-white/5 z-20">
-        <div className="max-w-4xl mx-auto bg-[#0a0a16] rounded-full px-2 py-2 border border-white/10 focus-within:shadow-[0_0_25px_rgba(0,242,255,0.4)] transition-all flex items-center gap-2">
+      <div className="p-4 bg-[#050511]/90 backdrop-blur-xl border-t border-white/[0.04] z-20">
+        <div className="max-w-4xl mx-auto bg-[#0a0a16] rounded-2xl px-2 py-2 border border-white/[0.06] focus-within:border-treez-indigo/30 focus-within:shadow-[0_0_40px_rgba(99,102,241,0.12)] transition-all duration-300 flex items-center gap-2">
            
            {attachment && (
-              <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-treez-accent/50 ml-2">
+              <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-treez-indigo/40 ml-2">
                 <img src={`data:${attachment.mimeType};base64,${attachment.base64}`} alt="Attachment" className="w-full h-full object-cover" />
                 <button 
                   onClick={() => setAttachment(null)}
@@ -417,10 +440,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
               </div>
             )}
 
-            
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="p-3 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                className="p-3 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-xl transition-all"
                 title="Attach image"
                 disabled={isStreaming || !canSend}
               >
@@ -440,15 +462,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
                value={input}
                onChange={(e) => setInput(e.target.value)}
                onKeyDown={handleKeyDown}
-               placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask TREEZ..."}
-               className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-500 focus:ring-0 focus:outline-none text-base px-2 disabled:opacity-50 disabled:cursor-not-allowed"
+               placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask Treez anything..."}
+               className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-600 focus:ring-0 focus:outline-none text-base px-2 disabled:opacity-50 disabled:cursor-not-allowed"
                disabled={isStreaming || !canSend}
              />
              
              <button
                onClick={() => handleSendMessage()}
                disabled={(!input.trim() && !attachment) || isStreaming || !canSend}
-               className="p-2.5 bg-gradient-to-r from-treez-accent to-treez-secondary text-white rounded-full shadow-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+               className="p-2.5 bg-gradient-to-r from-treez-indigo to-treez-purple text-white rounded-xl shadow-lg hover:shadow-glow-md disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300"
              >
                {isStreaming ? (
                  <Loader2 size={18} className="animate-spin" />
@@ -459,7 +481,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
         </div>
         <div className="text-center mt-2">
              <p className="text-[10px] text-gray-600">
-                {user ? "Standard Encryption • Private Session" : `${usageService.getRemainingPrompts()} free prompts remaining today`}
+                {user ? "End-to-end Encryption · Private Session" : `${usageService.getRemainingPrompts()} free prompts remaining`}
              </p>
         </div>
       </div>

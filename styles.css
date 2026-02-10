@@ -2,29 +2,442 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   TREEZ INTELLIGENCE — Design System
+   ============================================ */
+
+/* --- Google Fonts --- */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+/* --- CSS Variables (Design Tokens) --- */
+:root {
+  --treez-bg-primary: #050511;
+  --treez-bg-secondary: #0a0a1a;
+  --treez-bg-card: #0d0d1e;
+  --treez-bg-elevated: #13132b;
+  --treez-bg-surface: #1f1f3a;
+
+  --treez-cyan: #00d9ff;
+  --treez-indigo: #6366f1;
+  --treez-violet: #7c3aed;
+  --treez-purple: #a855f7;
+  --treez-fuchsia: #d946ef;
+
+  --treez-text-primary: #f8fafc;
+  --treez-text-secondary: #94a3b8;
+  --treez-text-muted: #64748b;
+  --treez-text-dim: #475569;
+
+  --treez-border: rgba(255, 255, 255, 0.06);
+  --treez-border-hover: rgba(255, 255, 255, 0.12);
+  --treez-border-active: rgba(99, 102, 241, 0.4);
+
+  --treez-glow-cyan: rgba(0, 217, 255, 0.15);
+  --treez-glow-indigo: rgba(99, 102, 241, 0.15);
+  --treez-glow-violet: rgba(124, 58, 237, 0.15);
+
+  --treez-radius-sm: 8px;
+  --treez-radius-md: 12px;
+  --treez-radius-lg: 16px;
+  --treez-radius-xl: 24px;
+  --treez-radius-full: 9999px;
+}
+
+/* --- Base Layer --- */
 @layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-[#050511] text-white;
+    font-family:
+      "Inter",
+      system-ui,
+      -apple-system,
+      sans-serif;
+    overflow: hidden;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 100px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.5);
+  }
+
+  /* Selection */
+  ::selection {
+    background: rgba(99, 102, 241, 0.3);
+    color: white;
+  }
+
+  /* Focus visible ring */
+  :focus-visible {
+    outline: 2px solid var(--treez-indigo);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 }
 
+/* --- Component Layer --- */
 @layer components {
+  /* ---- Glass Panel ---- */
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-md border border-white/10;
+    background: rgba(13, 13, 30, 0.6);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .glass-panel-subtle {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  /* ---- Gradient borders ---- */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 217, 255, 0.3),
+      rgba(99, 102, 241, 0.3),
+      rgba(168, 85, 247, 0.3)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* ---- Input glow ---- */
+  .input-glow:focus-within {
+    box-shadow:
+      0 0 0 1px rgba(99, 102, 241, 0.3),
+      0 0 30px rgba(99, 102, 241, 0.1),
+      0 0 60px rgba(0, 217, 255, 0.05);
+    border-color: rgba(99, 102, 241, 0.4);
+  }
+
+  /* ---- Treez Button ---- */
+  .treez-btn {
+    @apply relative overflow-hidden font-medium transition-all duration-300;
+  }
+  .treez-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+  .treez-btn:hover::before {
+    transform: translateX(100%);
+  }
+
+  /* ---- Ambient Background Orbs ---- */
+  .ambient-bg {
+    position: relative;
+    overflow: hidden;
+  }
+  .ambient-bg::before,
+  .ambient-bg::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: float 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .ambient-bg::before {
+    width: 500px;
+    height: 500px;
+    background: var(--treez-violet);
+    top: -10%;
+    right: -5%;
+    animation-delay: 0s;
+  }
+  .ambient-bg::after {
+    width: 400px;
+    height: 400px;
+    background: var(--treez-cyan);
+    bottom: -10%;
+    left: -5%;
+    animation-delay: -10s;
+  }
+
+  /* ---- Noise texture overlay ---- */
+  .noise-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.02;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ---- Sidebar Active Indicator ---- */
+  .nav-active-indicator {
+    position: relative;
+  }
+  .nav-active-indicator::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    border-radius: 0 4px 4px 0;
+    background: linear-gradient(180deg, var(--treez-cyan), var(--treez-indigo));
+    box-shadow: 0 0 12px var(--treez-glow-cyan);
+  }
+
+  /* ---- Markdown Content Styles ---- */
+  .markdown-content {
+    line-height: 1.75;
+  }
+  .markdown-content p {
+    margin-bottom: 0.75rem;
+  }
+  .markdown-content p:last-child {
+    margin-bottom: 0;
+  }
+  .markdown-content strong {
+    color: #e2e8f0;
+    font-weight: 600;
+  }
+  .markdown-content em {
+    color: #cbd5e1;
   }
 }
 
+/* --- Utility Layer --- */
 @layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-in-out;
+  /* ---- Gradient Text ---- */
+  .text-gradient-primary {
+    background: linear-gradient(135deg, #00d9ff, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+  .text-gradient-subtle {
+    background: linear-gradient(135deg, #f8fafc, #cbd5e1, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
+
+  /* ---- Animations ---- */
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin 12s linear infinite;
+  }
+
+  /* ---- Hover Effects ---- */
+  .hover-lift {
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .hover-glow {
+    transition:
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+  }
+  .hover-glow:hover {
+    box-shadow: 0 0 20px var(--treez-glow-indigo);
+    border-color: rgba(99, 102, 241, 0.3);
+  }
+}
+
+/* --- Keyframes --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.25);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(20px, -30px) scale(1.05);
+  }
+  50% {
+    transform: translate(-15px, 15px) scale(0.95);
+  }
+  75% {
+    transform: translate(10px, -10px) scale(1.02);
+  }
+}
+
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+/* ---- Grid Pattern Background ---- */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ---- Dot Pattern Background ---- */
+.dot-pattern {
+  background-image: radial-gradient(
+    rgba(99, 102, 241, 0.08) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
 }

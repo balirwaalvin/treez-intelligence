@@ -3,7 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Treez AI</title>
+    <meta name="description" content="Treez Intelligence — Advanced AI platform for chat, voice, and video generation powered by next-gen neural models." />
+    <meta name="theme-color" content="#050511" />
+    
+    <title>Treez Intelligence — AI Platform</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    
+    <!-- Favicon (SVG inline) -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120' fill='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='100%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%2300D9FF'/%3E%3Cstop offset='100%25' stop-color='%23A855F7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M60 100L60 45' stroke='url(%23g)' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M60 55C50 50 35 42 25 30' stroke='url(%23g)' stroke-width='3.5' stroke-linecap='round' fill='none'/%3E%3Cpath d='M60 55C70 50 85 42 95 30' stroke='url(%23g)' stroke-width='3.5' stroke-linecap='round' fill='none'/%3E%3Cpath d='M60 45L60 20' stroke='url(%23g)' stroke-width='3.5' stroke-linecap='round'/%3E%3Ccircle cx='60' cy='18' r='4' fill='%23A855F7'/%3E%3Ccircle cx='25' cy='30' r='3.5' fill='%2300D9FF'/%3E%3Ccircle cx='95' cy='30' r='3.5' fill='%2300D9FF'/%3E%3Ccircle cx='60' cy='55' r='4' fill='white'/%3E%3C/svg%3E" />
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -11,16 +23,23 @@
           extend: {
             colors: {
               treez: {
-                900: '#050511', // Darker, deeper space black
+                900: '#050511',
                 800: '#13132b',
                 700: '#1f1f3a',
-                accent: '#00f2ff', // Cyan Neon
-                secondary: '#7000ff', // Deep Purple
-                surface: 'rgba(255, 255, 255, 0.05)',
-              }
+                600: '#2d2d52',
+                accent: '#00D9FF',
+                secondary: '#7C3AED',
+                indigo: '#6366F1',
+                purple: '#A855F7',
+                fuchsia: '#D946EF',
+                surface: 'rgba(255, 255, 255, 0.03)',
+              },
+              'treez-accent': '#00D9FF',
+              'treez-800': '#13132b',
             },
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
+              sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
             },
             animation: {
               'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -28,6 +47,8 @@
               'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
               'fade-in': 'fadeIn 0.5s ease-out forwards',
               'spin-slow': 'spin 12s linear infinite',
+              'slide-up': 'slideUp 0.3s ease-out forwards',
+              'float': 'float 6s ease-in-out infinite',
             },
             keyframes: {
               blob: {
@@ -43,42 +64,69 @@
               fadeIn: {
                 '0%': { opacity: '0' },
                 '100%': { opacity: '1' },
-              }
-            }
+              },
+              slideUp: {
+                '0%': { opacity: '0', transform: 'translateY(12px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              float: {
+                '0%, 100%': { transform: 'translate(0, 0)' },
+                '50%': { transform: 'translate(0, -10px)' },
+              },
+            },
+            boxShadow: {
+              'glow-sm': '0 0 15px rgba(99, 102, 241, 0.15)',
+              'glow-md': '0 0 30px rgba(99, 102, 241, 0.2)',
+              'glow-lg': '0 0 50px rgba(99, 102, 241, 0.25)',
+              'glow-cyan': '0 0 30px rgba(0, 217, 255, 0.2)',
+            },
           },
         },
       }
     </script>
     <style>
+      * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
       body {
         background: #050511;
         color: #ffffff;
+        font-family: 'Inter', system-ui, sans-serif;
       }
       /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #050511; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #1f1f3a; 
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #7000ff; 
-      }
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 100px; }
+      ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.5); }
+      ::selection { background: rgba(99, 102, 241, 0.3); color: white; }
+      
       .glass-panel {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(13, 13, 30, 0.6);
+        backdrop-filter: blur(24px) saturate(1.2);
+        -webkit-backdrop-filter: blur(24px) saturate(1.2);
+        border: 1px solid rgba(255, 255, 255, 0.06);
       }
       .input-glow:focus-within {
-        box-shadow: 0 0 30px rgba(112, 0, 255, 0.2);
-        border-color: rgba(112, 0, 255, 0.4);
+        box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3), 0 0 30px rgba(99, 102, 241, 0.1);
+        border-color: rgba(99, 102, 241, 0.4);
       }
+      .noise-overlay::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        opacity: 0.02;
+        pointer-events: none;
+        z-index: 1;
+      }
+      .treez-btn { position: relative; overflow: hidden; }
+      .treez-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+      }
+      .treez-btn:hover::before { transform: translateX(100%); }
     </style>
   <script type="importmap">
 {
