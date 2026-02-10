@@ -310,10 +310,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
             <div className="mt-3 flex items-center justify-center gap-3 text-xs text-gray-600">
                <span className="flex items-center gap-1.5">
                   <div className={`w-1.5 h-1.5 rounded-full ${user ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]' : 'bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.3)]'}`} />
-                  {user ? "Treez Pro" : "Guest Mode"}
+                  {user ? (user.plan === 'pro' ? "Treez Pro" : "TREEZ Standard") : "Guest Mode"}
                </span>
-               <span className="text-gray-700">·</span>
-               <span>{usageService.getRemainingPrompts()} prompts remaining</span>
+               {!user && (
+                 <>
+                   <span className="text-gray-700">·</span>
+                   <span>{usageService.getRemainingPrompts()} prompts remaining</span>
+                 </>
+               )}
             </div>
           </div>
         </div>
