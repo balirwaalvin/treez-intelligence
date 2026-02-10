@@ -183,9 +183,9 @@ const App: React.FC = () => {
               </p>
             )}
             <div className="space-y-1">
-              <NavItem mode={AppMode.CHAT} icon={MessageSquare} label="Treez Chat" desc="AI Assistant" />
-              <NavItem mode={AppMode.LIVE} icon={Mic} label="Treez Live" desc="Voice Interface" />
-              <NavItem mode={AppMode.VIDEO} icon={Video} label="Treez Motion" desc="Video Generation" />
+              <NavItem mode={AppMode.CHAT} icon={MessageSquare} label="TREEZ Chat" desc="AI Assistant" />
+              <NavItem mode={AppMode.LIVE} icon={Mic} label="TREEZ Live" desc="Voice Interface" />
+              <NavItem mode={AppMode.VIDEO} icon={Video} label="TREEZ Motion" desc="Video Generation" />
             </div>
 
             {!isCollapsed && (
@@ -202,7 +202,10 @@ const App: React.FC = () => {
           </div>
 
           {/* Sidebar Footer */}
-          <div className="mt-auto p-3 border-t border-white/[0.04] space-y-1.5">
+          <div className="mt-auto p-3 border-t border-white/[0.04] space-y-1.5 ">
+              <div className={`text-center mb-2 ${isCollapsed ? 'hidden' : 'block'}`}>
+                  <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-gray-600">TREEZ Intelligence</span>
+              </div>
               {!user ? (
                    <button 
                       onClick={() => setIsAuthModalOpen(true)}
@@ -248,10 +251,10 @@ const App: React.FC = () => {
                {/* Subtle breadcrumb - only on desktop */}
                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
                  <div className="w-1.5 h-1.5 rounded-full bg-treez-accent animate-pulse" />
-                 <span className="text-xs text-gray-400 font-medium">
-                   {activeMode === AppMode.CHAT && 'Treez Chat'}
-                   {activeMode === AppMode.LIVE && 'Treez Live'}
-                   {activeMode === AppMode.VIDEO && 'Treez Motion'}
+                 <span className="text-xs text-gray-400 font-medium tracking-wide">
+                   {activeMode === AppMode.CHAT && 'TREEZ Chat'}
+                   {activeMode === AppMode.LIVE && 'TREEZ Live'}
+                   {activeMode === AppMode.VIDEO && 'TREEZ Motion'}
                    {activeMode === AppMode.PROFILE && 'Profile'}
                  </span>
                </div>

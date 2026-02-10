@@ -40,7 +40,7 @@ export const VideoInterface: React.FC = () => {
     <div className="flex flex-col h-full p-6 overflow-y-auto">
         <div className="max-w-4xl mx-auto w-full space-y-8">
             <div className="space-y-2">
-                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-purple-400">Treez Motion</h2>
+                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-purple-400">TREEZ Motion</h2>
                 <p className="text-gray-400">Cinematic video generation powered by Veo.</p>
             </div>
 
@@ -89,7 +89,7 @@ export const VideoInterface: React.FC = () => {
             <div className="p-4 bg-white/5 rounded-lg border border-white/5 text-sm text-gray-400">
                 <p className="flex items-center gap-2">
                     <AlertCircle size={16} />
-                    Treez Motion uses the Veo model. Videos are generated securely on our servers.
+                    TREEZ Motion uses the Veo model. Videos are generated securely on our servers.
                 </p>
             </div>
         </div>

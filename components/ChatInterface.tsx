@@ -293,7 +293,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
                  value={input}
                  onChange={(e) => setInput(e.target.value)}
                  onKeyDown={handleKeyDown}
-                 placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask Treez anything..."}
+                 placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask TREEZ anything..."}
                  className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-600 focus:ring-0 focus:outline-none text-base px-2 disabled:opacity-50 disabled:cursor-not-allowed"
                  disabled={isStreaming || !canSend}
                />
@@ -462,7 +462,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onOpenAuth }) => {
                value={input}
                onChange={(e) => setInput(e.target.value)}
                onKeyDown={handleKeyDown}
-               placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask Treez anything..."}
+               placeholder={!canSend ? "Daily limit reached. Sign in to continue." : "Ask TREEZ anything..."}
                className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-600 focus:ring-0 focus:outline-none text-base px-2 disabled:opacity-50 disabled:cursor-not-allowed"
                disabled={isStreaming || !canSend}
              />

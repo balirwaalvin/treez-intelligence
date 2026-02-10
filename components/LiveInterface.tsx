@@ -149,7 +149,7 @@ export const LiveInterface: React.FC = () => {
          const message = JSON.parse(event.data);
 
          if (message.type === 'open') {
-             console.log('Treez Live Connected via Proxy');
+             console.log('TREEZ Live Connected via Proxy');
              setIsConnected(true);
              setStatus('connected');
              startMicrophoneStream(inputCtx, stream, ws);
@@ -311,7 +311,7 @@ export const LiveInterface: React.FC = () => {
       <div className="z-10 flex flex-col items-center gap-8 w-full max-w-md p-8 glass-panel rounded-3xl shadow-2xl border-t border-white/10">
         
         <div className="text-center space-y-2">
-            <h2 className="text-2xl font-semibold text-white tracking-wide">Treez Live</h2>
+            <h2 className="text-2xl font-semibold text-white tracking-wide">TREEZ Live</h2>
             <p className="text-sm text-gray-400">
                 {status === 'disconnected' && "Ready to connect"}
                 {status === 'connecting' && "Establishing neural link..."}

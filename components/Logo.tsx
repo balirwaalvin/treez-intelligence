@@ -208,14 +208,11 @@ export const Logo: React.FC<{ size?: number; className?: string; iconOnly?: bool
       </svg>
       
       {!iconOnly && (
-        <div className="flex flex-col">
-          <span className="text-xl font-bold tracking-[0.25em] bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-indigo-300 to-purple-400"
+        <div className="flex flex-col justify-center h-full">
+          <span className="text-2xl font-bold tracking-[0.25em] bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-indigo-300 to-purple-400 leading-none"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
             TREEZ
-          </span>
-          <span className="text-[9px] font-medium tracking-[0.35em] text-gray-500 uppercase -mt-0.5">
-            Intelligence
           </span>
         </div>
       )}
