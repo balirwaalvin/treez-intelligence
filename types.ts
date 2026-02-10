@@ -17,7 +17,8 @@ export enum AppMode {
   CHAT = 'chat',
   LIVE = 'live',
   VIDEO = 'video',
-  PROFILE = 'profile'
+  PROFILE = 'profile',
+  SETTINGS = 'settings'
 }
 
 export interface UserPreferences {

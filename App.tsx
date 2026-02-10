@@ -6,6 +6,7 @@ import { LiveInterface } from './components/LiveInterface';
 import { VideoInterface } from './components/VideoInterface';
 import { AuthModal } from './components/AuthModal';
 import { ProfilePage } from './components/ProfilePage';
+import { SettingsPage } from './components/SettingsPage';
 import { SubscriptionModal } from './components/SubscriptionModal';
 import { useAuth } from './contexts/AuthContext';
 import { MessageSquare, Mic, Video, Settings, Menu, X, Sparkles, PanelLeftClose, PanelLeft, Lock, UserCircle, User, Zap, ChevronRight } from 'lucide-react';
@@ -30,6 +31,8 @@ const App: React.FC = () => {
         return <VideoInterface />;
       case AppMode.PROFILE:
         return <ProfilePage onBack={() => setActiveMode(AppMode.CHAT)} />;
+      case AppMode.SETTINGS:
+        return <SettingsPage onBack={() => setActiveMode(AppMode.CHAT)} />;
       default:
         return <ChatInterface key={chatSessionId} onOpenAuth={() => setIsAuthModalOpen(true)} />;
     }
@@ -231,7 +234,8 @@ const App: React.FC = () => {
               )}
 
               <button 
-                  className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-500 hover:text-gray-300 transition-all w-full rounded-xl hover:bg-white/[0.03] ${isCollapsed ? 'justify-center' : ''}`}
+                  onClick={() => setActiveMode(AppMode.SETTINGS)}
+                  className={`flex items-center gap-3 px-3 py-2 text-sm text-gray-500 hover:text-gray-300 transition-all w-full rounded-xl hover:bg-white/[0.03] ${isCollapsed ? 'justify-center' : ''} ${activeMode === AppMode.SETTINGS ? 'bg-white/5 text-white' : ''}`}
                   title="Settings"
               >
                   <Settings size={16} className="shrink-0" />
@@ -256,6 +260,7 @@ const App: React.FC = () => {
                    {activeMode === AppMode.LIVE && 'TREEZ Live'}
                    {activeMode === AppMode.VIDEO && 'TREEZ Motion'}
                    {activeMode === AppMode.PROFILE && 'Profile'}
+                   {activeMode === AppMode.SETTINGS && 'Settings'}
                  </span>
                </div>
              </div>
