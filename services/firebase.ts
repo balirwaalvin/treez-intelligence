@@ -143,6 +143,22 @@ export const chatService = {
     }
   },
 
+  // Get single chat session
+  getChatSession: async (sessionId: string) => {
+    try {
+      const docRef = doc(db, 'chatSessions', sessionId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return { success: true, session: { id: docSnap.id, ...docSnap.data() } };
+      } else {
+        return { success: false, error: "Session not found" };
+      }
+    } catch (error: any) {
+      console.error("Get Chat Session Error:", error);
+      return { success: false, error: error.message };
+    }
+  },
+
   // Update chat session
   updateChatSession: async (sessionId: string, updates: any) => {
     try {

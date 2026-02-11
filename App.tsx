@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppMode } from "./types";
 import { Logo, LogoMark } from "./components/Logo";
 import { ChatInterface } from "./components/ChatInterface";
@@ -9,6 +9,7 @@ import { ProfilePage } from "./components/ProfilePage";
 import { SettingsPage } from "./components/SettingsPage";
 import { SubscriptionModal } from "./components/SubscriptionModal";
 import { useAuth } from "./contexts/AuthContext";
+import { chatService } from "./services/firebase";
 import {
   MessageSquare,
   Mic,
@@ -24,6 +25,7 @@ import {
   User,
   Zap,
   ChevronRight,
+  MessageCircle,
 } from "lucide-react";
 
 const App: React.FC = () => {
@@ -32,17 +34,46 @@ const App: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
-  const [chatSessionId, setChatSessionId] = useState(Date.now());
+  const [chatSessionId, setChatSessionId] = useState(Date.now()); // Used as refresh trigger
+  const [recentChats, setRecentChats] = useState<any[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
   const { user } = useAuth();
+
+  // Load recent chats
+  const loadRecentChats = async () => {
+    if (user) {
+      const result = await chatService.getUserChatSessions(user.uid);
+      if (result.success && result.sessions) {
+        setRecentChats(result.sessions);
+      }
+    } else {
+      setRecentChats([]);
+    }
+  };
+
+  useEffect(() => {
+    loadRecentChats();
+  }, [user, chatSessionId]);
+
+  const handleSessionChange = (sessionId: string) => {
+    // Refresh list to show new title/preview
+    loadRecentChats();
+    // Optionally set active if it originated from within ChatInterface (e.g. first save)
+    if (activeSessionId !== sessionId) {
+      setActiveSessionId(sessionId);
+    }
+  };
 
   const renderContent = () => {
     switch (activeMode) {
       case AppMode.CHAT:
         return (
           <ChatInterface
-            key={chatSessionId}
+            key={activeSessionId || "new"}
             onOpenAuth={() => setIsAuthModalOpen(true)}
+            initialSessionId={activeSessionId}
+            onSessionChange={handleSessionChange}
           />
         );
       case AppMode.LIVE:
@@ -56,8 +87,10 @@ const App: React.FC = () => {
       default:
         return (
           <ChatInterface
-            key={chatSessionId}
+            key={activeSessionId || "new"}
             onOpenAuth={() => setIsAuthModalOpen(true)}
+            initialSessionId={activeSessionId}
+            onSessionChange={handleSessionChange}
           />
         );
     }
@@ -86,10 +119,12 @@ const App: React.FC = () => {
 
   const handleNewChat = () => {
     setActiveMode(AppMode.CHAT);
-    setChatSessionId(Date.now());
+    setActiveSessionId(null); // Reset session
+    setChatSessionId(Date.now()); // Force refresh/reset
     setIsSidebarOpen(false);
   };
 
+  // ... (NavItem component remains same, verify indentation/placement)
   const NavItem = ({
     mode,
     icon: Icon,
@@ -290,20 +325,53 @@ const App: React.FC = () => {
               />
             </div>
 
-            {!isCollapsed && (
-              <div className="mt-6 animate-fade-in">
-                <p className="px-3 text-[10px] font-semibold text-gray-500/80 uppercase tracking-[0.15em] mb-2">
-                  Recent
-                </p>
-                <div className="px-3 py-3 text-[13px] text-gray-600 italic flex items-center gap-2">
-                  <div className="w-1 h-1 rounded-full bg-gray-700" />
-                  No conversations yet
+            {!isCollapsed && user && (
+              <div className="mt-6 animate-fade-in group">
+                <div className="flex items-center justify-between px-3 mb-2">
+                  <p className="text-[10px] font-semibold text-gray-500/80 uppercase tracking-[0.15em]">
+                    Recent
+                  </p>
+                </div>
+
+                <div className="space-y-1">
+                  {recentChats.length === 0 ? (
+                    <div className="px-3 py-3 text-[13px] text-gray-600 italic flex items-center gap-2">
+                      <div className="w-1 h-1 rounded-full bg-gray-700" />
+                      No conversations yet
+                    </div>
+                  ) : (
+                    recentChats.map((chat) => (
+                      <button
+                        key={chat.id}
+                        onClick={() => {
+                          setActiveMode(AppMode.CHAT);
+                          setActiveSessionId(chat.id);
+                          setIsSidebarOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all flex items-center gap-3 group/item
+                                ${activeSessionId === chat.id ? "bg-white/5 text-white shadow-glow-sm" : "text-gray-400 hover:text-white hover:bg-white/[0.04]"}`}
+                      >
+                        <MessageCircle
+                          size={14}
+                          className={`shrink-0 ${activeSessionId === chat.id ? "text-treez-accent" : "text-gray-600 group-hover/item:text-gray-400"}`}
+                        />
+                        <div className="flex-1 truncate">
+                          <div className="truncate font-medium">
+                            {chat.title || "Untitled Chat"}
+                          </div>
+                          <div className="text-[10px] text-gray-600 truncate">
+                            {new Date(chat.updatedAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Sidebar Footer */}
+          {/* Sidebar Footer (User Info) */}
           <div className="mt-auto p-3 border-t border-white/[0.04] space-y-1.5 ">
             <div
               className={`text-center mb-2 ${isCollapsed ? "hidden" : "block"}`}
