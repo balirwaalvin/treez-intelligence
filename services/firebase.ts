@@ -22,7 +22,10 @@ import {
   ref,
   uploadBytes,
   getDownloadURL,
-  deleteObject
+  deleteObject,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile
 } from '../firebase';
 
 // ==================== Authentication Services ====================
@@ -42,7 +45,6 @@ export const authService = {
   // Sign up with Email/Password
   signUpWithEmail: async (email: string, password: string) => {
     try {
-      const { createUserWithEmailAndPassword, auth } = await import('../firebase');
       const result = await createUserWithEmailAndPassword(auth, email, password);
       return { success: true, user: result.user };
     } catch (error: any) {
@@ -54,7 +56,6 @@ export const authService = {
   // Sign in with Email/Password
   signInWithEmail: async (email: string, password: string) => {
     try {
-        const { signInWithEmailAndPassword, auth } = await import('../firebase');
         const result = await signInWithEmailAndPassword(auth, email, password);
         return { success: true, user: result.user };
     } catch (error: any) {
@@ -66,7 +67,6 @@ export const authService = {
   // Update Profile
   updateUserProfile: async (displayName: string, photoURL?: string) => {
     try {
-        const { updateProfile, auth } = await import('../firebase');
         if (auth.currentUser) {
             await updateProfile(auth.currentUser, {
                 displayName: displayName,
