@@ -39,10 +39,22 @@ const App: React.FC = () => {
   };
   
   const handleModeSwitch = (mode: AppMode) => {
-      if ((mode === AppMode.LIVE || mode === AppMode.VIDEO) && !user) {
+      if (mode === AppMode.LIVE && !user) {
           setIsAuthModalOpen(true);
           return;
       }
+      
+      if (mode === AppMode.VIDEO) {
+          if (!user) {
+              setIsAuthModalOpen(true);
+              return;
+          }
+          if (user.plan !== 'pro') {
+              setIsSubscriptionModalOpen(true);
+              return;
+          }
+      }
+
       setActiveMode(mode);
       setIsSidebarOpen(false);
   };
@@ -54,7 +66,17 @@ const App: React.FC = () => {
   };
 
   const NavItem = ({ mode, icon: Icon, label, desc }: { mode: AppMode; icon: any; label: string; desc?: string }) => {
-     const isLocked = (mode === AppMode.LIVE || mode === AppMode.VIDEO) && !user;
+     // Determine if the item is locked
+     let isLocked = false;
+     
+     if (mode === AppMode.LIVE && !user) {
+         isLocked = true;
+     } else if (mode === AppMode.VIDEO) {
+         if (!user || user.plan !== 'pro') {
+             isLocked = true;
+         }
+     }
+
      const isActive = activeMode === mode;
      
      return (

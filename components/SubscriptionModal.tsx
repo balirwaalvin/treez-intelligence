@@ -32,6 +32,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
       description: 'Power up your creativity with advanced features.',
       features: [
         'Access to advanced models',
+        'Access to TREEZ Motion',
         'Unlimited image generation',
         'Fast response speed',
         'Priority support',
@@ -49,6 +50,7 @@ export const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, on
       description: 'The ultimate experience for power users.',
       features: [
         'Access to most capable models',
+        'Access to TREEZ Motion',
         'High-definition image generation',
         'Ultra-fast response speed',
         '24/7 Priority support',
