@@ -88,7 +88,7 @@ const App: React.FC = () => {
       case AppMode.CHAT:
         return (
           <ChatInterface
-            key={activeSessionId || "new"}
+            key={activeSessionId || `new-${chatSessionId}`}
             onOpenAuth={() => setIsAuthModalOpen(true)}
             initialSessionId={activeSessionId}
             onSessionChange={handleSessionChange}
@@ -105,7 +105,7 @@ const App: React.FC = () => {
       default:
         return (
           <ChatInterface
-            key={activeSessionId || "new"}
+            key={activeSessionId || `new-${chatSessionId}`}
             onOpenAuth={() => setIsAuthModalOpen(true)}
             initialSessionId={activeSessionId}
             onSessionChange={handleSessionChange}
