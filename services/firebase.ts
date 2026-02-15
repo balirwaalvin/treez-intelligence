@@ -27,6 +27,7 @@ import {
   signInWithEmailAndPassword,
   updateProfile
 } from '../firebase';
+import { ChatSession, ChatMessage } from '../types';
 
 // ==================== Authentication Services ====================
 
@@ -149,7 +150,14 @@ export const chatService = {
       const docRef = doc(db, 'chatSessions', sessionId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        return { success: true, session: { id: docSnap.id, ...docSnap.data() } };
+        const data = docSnap.data();
+        return { 
+          success: true, 
+          session: { 
+            id: docSnap.id, 
+            ...data 
+          } as ChatSession 
+        };
       } else {
         return { success: false, error: "Session not found" };
       }

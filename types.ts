@@ -24,3 +24,13 @@ export enum AppMode {
 export interface UserPreferences {
   userName: string;
 }
+
+export interface ChatSession {
+  id: string;
+  userId: string;
+  title?: string;
+  messages: ChatMessage[];
+  createdAt: string;
+  updatedAt: string;
+  preview?: string;
+}
