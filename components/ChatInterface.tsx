@@ -61,47 +61,47 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   // Update active session when prop changes
   useEffect(() => {
-    if (initialSessionId !== activeSessionId) {
-      if (initialSessionId) {
-        // Load session
-        const loadSession = async () => {
-          try {
-            const result = await chatService.getChatSession(initialSessionId);
-            if (result.success && result.session) {
-              // Ensure messages is an array and convert timestamps
-              const messagesArray = Array.isArray(result.session.messages) 
-                ? result.session.messages 
-                : [];
-              
-              const loadedMessages = messagesArray.map((msg: any) => ({
-                ...msg,
-                timestamp: msg.timestamp instanceof Date 
-                  ? msg.timestamp 
-                  : msg.timestamp?.toDate?.()
-                    ? msg.timestamp.toDate()
-                    : new Date(msg.timestamp || new Date()),
-              }));
-              
-              console.log("Loaded messages:", loadedMessages);
-              setMessages(loadedMessages);
-              setActiveSessionId(initialSessionId);
-            } else {
-              console.error("Failed to load session:", result.error);
-              setMessages([]);
-              setActiveSessionId(initialSessionId);
-            }
-          } catch (error) {
-            console.error("Error loading session:", error);
+    if (initialSessionId) {
+      // Load session
+      const loadSession = async () => {
+        try {
+          console.log("📂 Loading session:", initialSessionId);
+          const result = await chatService.getChatSession(initialSessionId);
+          if (result.success && result.session) {
+            // Ensure messages is an array and convert timestamps
+            const messagesArray = Array.isArray(result.session.messages) 
+              ? result.session.messages 
+              : [];
+            
+            const loadedMessages = messagesArray.map((msg: any) => ({
+              ...msg,
+              timestamp: msg.timestamp instanceof Date 
+                ? msg.timestamp 
+                : msg.timestamp?.toDate?.()
+                  ? msg.timestamp.toDate()
+                  : new Date(msg.timestamp || new Date()),
+            }));
+            
+            console.log("✅ Loaded", loadedMessages.length, "messages:", loadedMessages);
+            setMessages(loadedMessages);
+            setActiveSessionId(initialSessionId);
+          } else {
+            console.error("❌ Failed to load session:", result.error);
             setMessages([]);
+            setActiveSessionId(initialSessionId);
           }
-        };
-        loadSession();
-      } else {
-        // Reset to empty
-        setMessages([]);
-        setActiveSessionId(null);
-        setChatSession(createChatSession()); // New genai session context
-      }
+        } catch (error) {
+          console.error("❌ Error loading session:", error);
+          setMessages([]);
+        }
+      };
+      loadSession();
+    } else {
+      // Reset to empty - new chat
+      console.log("📝 Starting new chat");
+      setMessages([]);
+      setActiveSessionId(null);
+      setChatSession(createChatSession()); // New genai session context
     }
   }, [initialSessionId]);
 
@@ -157,6 +157,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             ? firstMsg.text.slice(0, 30) + "..."
             : firstMsg.text;
 
+        console.log("💾 Creating new session with", newMessages.length, "messages");
         const result = await chatService.saveChatSession(user.uid, {
           title,
           messages: newMessages,
@@ -164,18 +165,32 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         });
 
         if (result.success && result.id) {
+          console.log("✅ Session created:", result.id);
           setActiveSessionId(result.id);
           if (onSessionChange) onSessionChange(result.id);
+        } else {
+          console.error("❌ Failed to create session:", result.error);
         }
       } else {
-        // Update existing
-        await chatService.updateChatSession(activeSessionId, {
-          messages: newMessages,
-          preview: newMessages[newMessages.length - 1].text.slice(0, 50),
+        // Update existing - get latest messages from state
+        const latestMessages = newMessages.length > 0 ? newMessages : messages;
+        const lastMsg = latestMessages[latestMessages.length - 1];
+        const preview = lastMsg?.text ? lastMsg.text.slice(0, 50) : "...";
+        
+        console.log("💾 Updating session", activeSessionId, "with", latestMessages.length, "messages");
+        const result = await chatService.updateChatSession(activeSessionId, {
+          messages: latestMessages,
+          preview: preview,
         });
+        
+        if (result.success) {
+          console.log("✅ Session updated successfully");
+        } else {
+          console.error("❌ Failed to update session:", result.error);
+        }
       }
     } catch (err) {
-      console.error("Failed to save chat history", err);
+      console.error("❌ Failed to save chat history:", err);
     }
   };
 
@@ -249,13 +264,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       // Final update for local state
       const finalModelMsg = { ...modelMsg, text: fullText, isStreaming: false };
-      setMessages((prev) =>
-        prev.map((msg) => (msg.id === modelMsgId ? finalModelMsg : msg)),
-      );
+      const allMessages = [...newMessages, finalModelMsg];
+      
+      setMessages(allMessages);
 
       // Save entire history including new pair
-      const messagesToSave = [...newMessages, finalModelMsg];
-      await saveToHistory(messagesToSave);
+      console.log("💾 Saving conversation with", allMessages.length, "total messages");
+      await saveToHistory(allMessages);
     } catch (error) {
       console.error("Chat error:", error);
       setMessages((prev) => [
@@ -323,13 +338,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           isStreaming: false,
         };
 
-        setMessages((prev) =>
-          prev.map((msg) => (msg.id === modelMsgId ? finalModelMsg : msg)),
-        );
+        const allMessages = [...newMessages, finalModelMsg];
+        setMessages(allMessages);
 
         // Save history
-        const messagesToSave = [...newMessages, finalModelMsg];
-        await saveToHistory(messagesToSave);
+        console.log("💾 Saving image generation with", allMessages.length, "total messages");
+        await saveToHistory(allMessages);
       } else {
         throw new Error("Failed to generate image");
       }
