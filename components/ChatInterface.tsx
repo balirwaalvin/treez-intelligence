@@ -65,19 +65,34 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       if (initialSessionId) {
         // Load session
         const loadSession = async () => {
-          const result = await chatService.getChatSession(initialSessionId);
-          if (result.success && result.session) {
-            // Convert timestamps back to Date objects if needed (Firestore timestamps)
-            const loadedMessages = (result.session.messages || []).map(
-              (msg: any) => ({
+          try {
+            const result = await chatService.getChatSession(initialSessionId);
+            if (result.success && result.session) {
+              // Ensure messages is an array and convert timestamps
+              const messagesArray = Array.isArray(result.session.messages) 
+                ? result.session.messages 
+                : [];
+              
+              const loadedMessages = messagesArray.map((msg: any) => ({
                 ...msg,
-                timestamp: msg.timestamp?.toDate
-                  ? msg.timestamp.toDate()
-                  : new Date(msg.timestamp),
-              }),
-            );
-            setMessages(loadedMessages);
-            setActiveSessionId(initialSessionId);
+                timestamp: msg.timestamp instanceof Date 
+                  ? msg.timestamp 
+                  : msg.timestamp?.toDate?.()
+                    ? msg.timestamp.toDate()
+                    : new Date(msg.timestamp || new Date()),
+              }));
+              
+              console.log("Loaded messages:", loadedMessages);
+              setMessages(loadedMessages);
+              setActiveSessionId(initialSessionId);
+            } else {
+              console.error("Failed to load session:", result.error);
+              setMessages([]);
+              setActiveSessionId(initialSessionId);
+            }
+          } catch (error) {
+            console.error("Error loading session:", error);
+            setMessages([]);
           }
         };
         loadSession();

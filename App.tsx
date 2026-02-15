@@ -369,37 +369,42 @@ const App: React.FC = () => {
                     </div>
                   ) : (
                     recentChats.map((chat) => (
-                      <button
+                      <div
                         key={chat.id}
-                        onClick={() => {
-                          setActiveMode(AppMode.CHAT);
-                          setActiveSessionId(chat.id);
-                          setIsSidebarOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all flex items-center gap-3 group/item
-                                ${activeSessionId === chat.id ? "bg-white/5 text-white shadow-glow-sm" : "text-gray-400 hover:text-white hover:bg-white/[0.04]"}`}
+                        className={`w-full relative group/item rounded-xl transition-all flex items-center gap-1 pr-1
+                              ${activeSessionId === chat.id ? "bg-white/5 shadow-glow-sm" : "hover:bg-white/[0.04]"}`}
                       >
-                        <MessageCircle
-                          size={14}
-                          className={`shrink-0 ${activeSessionId === chat.id ? "text-treez-accent" : "text-gray-600 group-hover/item:text-gray-400"}`}
-                        />
-                        <div className="flex-1 truncate">
-                          <div className="truncate font-medium">
-                            {chat.title || "Untitled Chat"}
+                        <button
+                          onClick={() => {
+                            setActiveMode(AppMode.CHAT);
+                            setActiveSessionId(chat.id);
+                            setIsSidebarOpen(false);
+                          }}
+                          className={`flex-1 text-left px-3 py-2.5 rounded-xl transition-all flex items-center gap-3 min-w-0
+                                ${activeSessionId === chat.id ? "text-white" : "text-gray-400 group-hover/item:text-white"}`}
+                        >
+                          <MessageCircle
+                            size={14}
+                            className={`shrink-0 ${activeSessionId === chat.id ? "text-treez-accent" : "text-gray-600 group-hover/item:text-gray-400"}`}
+                          />
+                          <div className="flex-1 truncate">
+                            <div className="truncate font-medium">
+                              {chat.title || "Untitled Chat"}
+                            </div>
+                            <div className="text-[10px] text-gray-600 truncate">
+                              {new Date(chat.updatedAt).toLocaleDateString()}
+                            </div>
                           </div>
-                          <div className="text-[10px] text-gray-600 truncate">
-                            {new Date(chat.updatedAt).toLocaleDateString()}
-                          </div>
-                        </div>
+                        </button>
 
                         <button
                           onClick={(e) => handleDeleteChat(e, chat.id)}
-                          className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-white/10 rounded-lg opacity-0 group-hover/item:opacity-100 transition-all"
+                          className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-white/10 rounded-lg opacity-0 group-hover/item:opacity-100 transition-all shrink-0"
                           title="Delete Chat"
                         >
                           <Trash2 size={13} />
                         </button>
-                      </button>
+                      </div>
                     ))
                   )}
                 </div>
