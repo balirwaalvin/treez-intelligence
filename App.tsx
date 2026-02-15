@@ -47,6 +47,16 @@ const App: React.FC = () => {
       const result = await chatService.getUserChatSessions(user.uid);
       if (result.success && result.sessions) {
         setRecentChats(result.sessions);
+      } else {
+        console.error("Failed to load chats:", result.error);
+        // If the error is an index error, it usually contains a link.
+        // We can optionally alert the user or just rely on console for now.
+        if (result.error?.includes("index")) {
+          // Alert the user about the missing index
+          alert(
+            "Firestore Index Required: Please check the browser console for a link to create the required index.",
+          );
+        }
       }
     } else {
       setRecentChats([]);

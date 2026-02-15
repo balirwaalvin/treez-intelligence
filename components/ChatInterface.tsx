@@ -178,9 +178,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       role: MessageRole.USER,
       text: text,
       timestamp: new Date(),
-      images: attachment
-        ? [`data:${attachment.mimeType};base64,${attachment.base64}`]
-        : undefined,
+      ...(attachment
+        ? {
+            images: [`data:${attachment.mimeType};base64,${attachment.base64}`],
+          }
+        : {}),
     };
 
     const newMessages = [...messages, userMsg];

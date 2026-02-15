@@ -106,13 +106,29 @@ export const authService = {
 
 // ==================== Chat History Services ====================
 
+// Helper to remove undefined values
+const sanitizeForFirestore = (obj: any): any => {
+  if (obj === null || obj === undefined) return null; // Convert undefined to null or omit
+  if (Array.isArray(obj)) return obj.map(sanitizeForFirestore);
+  if (typeof obj === 'object' && !(obj instanceof Date)) {
+    return Object.entries(obj).reduce((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = sanitizeForFirestore(value);
+      }
+      return acc;
+    }, {} as any);
+  }
+  return obj;
+};
+
 export const chatService = {
   // Save chat session
   saveChatSession: async (userId: string, sessionData: any) => {
     try {
+      const sanitizedData = sanitizeForFirestore(sessionData);
       const docRef = await addDoc(collection(db, 'chatSessions'), {
         userId,
-        ...sessionData,
+        ...sanitizedData,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
@@ -136,7 +152,7 @@ export const chatService = {
       const sessions = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
+      })) as ChatSession[];
       return { success: true, sessions };
     } catch (error: any) {
       console.error("Get Chat Sessions Error:", error);
@@ -170,9 +186,10 @@ export const chatService = {
   // Update chat session
   updateChatSession: async (sessionId: string, updates: any) => {
     try {
+      const sanitizedUpdates = sanitizeForFirestore(updates);
       const sessionRef = doc(db, 'chatSessions', sessionId);
       await updateDoc(sessionRef, {
-        ...updates,
+        ...sanitizedUpdates,
         updatedAt: new Date().toISOString()
       });
       return { success: true };
