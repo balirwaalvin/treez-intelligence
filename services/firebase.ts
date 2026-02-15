@@ -191,6 +191,25 @@ export const chatService = {
       console.error("Delete Chat Session Error:", error);
       return { success: false, error: error.message };
     }
+  },
+
+  // Clear all chat history for a user
+  clearUserChatHistory: async (userId: string) => {
+    try {
+      const q = query(
+        collection(db, 'chatSessions'),
+        where('userId', '==', userId)
+      );
+      const snapshot = await getDocs(q);
+      
+      const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error("Clear History Error:", error);
+      return { success: false, error: error.message };
+    }
   }
 };
 

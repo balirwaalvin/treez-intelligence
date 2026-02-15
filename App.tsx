@@ -26,6 +26,7 @@ import {
   Zap,
   ChevronRight,
   MessageCircle,
+  Trash2,
 } from "lucide-react";
 
 const App: React.FC = () => {
@@ -62,6 +63,23 @@ const App: React.FC = () => {
     // Optionally set active if it originated from within ChatInterface (e.g. first save)
     if (activeSessionId !== sessionId) {
       setActiveSessionId(sessionId);
+    }
+  };
+
+  const handleDeleteChat = async (e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation();
+    if (!sessionId) return;
+
+    if (confirm("Delete this chat?")) {
+      const result = await chatService.deleteChatSession(sessionId);
+      if (result.success) {
+        // If active, clear it
+        if (activeSessionId === sessionId) {
+          setActiveSessionId(null);
+          setChatSessionId(Date.now()); // Reset chat interface
+        }
+        loadRecentChats(); // Refresh list
+      }
     }
   };
 
@@ -363,6 +381,14 @@ const App: React.FC = () => {
                             {new Date(chat.updatedAt).toLocaleDateString()}
                           </div>
                         </div>
+
+                        <button
+                          onClick={(e) => handleDeleteChat(e, chat.id)}
+                          className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-white/10 rounded-lg opacity-0 group-hover/item:opacity-100 transition-all"
+                          title="Delete Chat"
+                        >
+                          <Trash2 size={13} />
+                        </button>
                       </button>
                     ))
                   )}
