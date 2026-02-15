@@ -8,8 +8,8 @@ import { AuthModal } from "./components/AuthModal";
 import { ProfilePage } from "./components/ProfilePage";
 import { SettingsPage } from "./components/SettingsPage";
 import { SubscriptionModal } from "./components/SubscriptionModal";
+import { RecentChats } from "./components/RecentChats";
 import { useAuth } from "./contexts/AuthContext";
-import { chatService } from "./services/firebase";
 import {
   MessageSquare,
   Mic,
@@ -25,8 +25,6 @@ import {
   User,
   Zap,
   ChevronRight,
-  MessageCircle,
-  Trash2,
 } from "lucide-react";
 
 const App: React.FC = () => {
@@ -36,60 +34,30 @@ const App: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [chatSessionId, setChatSessionId] = useState(Date.now()); // Used as refresh trigger
-  const [recentChats, setRecentChats] = useState<any[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
   const { user } = useAuth();
 
-  // Load recent chats
-  const loadRecentChats = async () => {
-    if (user) {
-      const result = await chatService.getUserChatSessions(user.uid);
-      if (result.success && result.sessions) {
-        setRecentChats(result.sessions);
-      } else {
-        console.error("Failed to load chats:", result.error);
-        // If the error is an index error, it usually contains a link.
-        // We can optionally alert the user or just rely on console for now.
-        if (result.error?.includes("index")) {
-          // Alert the user about the missing index
-          alert(
-            "Firestore Index Required: Please check the browser console for a link to create the required index.",
-          );
-        }
-      }
-    } else {
-      setRecentChats([]);
-    }
-  };
-
-  useEffect(() => {
-    loadRecentChats();
-  }, [user, chatSessionId]);
-
   const handleSessionChange = (sessionId: string) => {
-    // Refresh list to show new title/preview
-    loadRecentChats();
+    // Trigger refresh of recent chats list
+    setChatSessionId(Date.now());
     // Optionally set active if it originated from within ChatInterface (e.g. first save)
     if (activeSessionId !== sessionId) {
       setActiveSessionId(sessionId);
     }
   };
 
-  const handleDeleteChat = async (e: React.MouseEvent, sessionId: string) => {
-    e.stopPropagation();
-    if (!sessionId) return;
+  const handleSelectChat = (sessionId: string) => {
+    setActiveMode(AppMode.CHAT);
+    setActiveSessionId(sessionId);
+    setIsSidebarOpen(false);
+  };
 
-    if (confirm("Delete this chat?")) {
-      const result = await chatService.deleteChatSession(sessionId);
-      if (result.success) {
-        // If active, clear it
-        if (activeSessionId === sessionId) {
-          setActiveSessionId(null);
-          setChatSessionId(Date.now()); // Reset chat interface
-        }
-        loadRecentChats(); // Refresh list
-      }
+  const handleDeleteChat = (sessionId: string) => {
+    // If active, clear it
+    if (activeSessionId === sessionId) {
+      setActiveSessionId(null);
+      setChatSessionId(Date.now()); // Reset chat interface
     }
   };
 
@@ -353,63 +321,13 @@ const App: React.FC = () => {
               />
             </div>
 
-            {!isCollapsed && user && (
-              <div className="mt-6 animate-fade-in group">
-                <div className="flex items-center justify-between px-3 mb-2">
-                  <p className="text-[10px] font-semibold text-gray-500/80 uppercase tracking-[0.15em]">
-                    Recent
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  {recentChats.length === 0 ? (
-                    <div className="px-3 py-3 text-[13px] text-gray-600 italic flex items-center gap-2">
-                      <div className="w-1 h-1 rounded-full bg-gray-700" />
-                      No conversations yet
-                    </div>
-                  ) : (
-                    recentChats.map((chat) => (
-                      <div
-                        key={chat.id}
-                        className={`w-full relative group/item rounded-xl transition-all flex items-center gap-1 pr-1
-                              ${activeSessionId === chat.id ? "bg-white/5 shadow-glow-sm" : "hover:bg-white/[0.04]"}`}
-                      >
-                        <button
-                          onClick={() => {
-                            setActiveMode(AppMode.CHAT);
-                            setActiveSessionId(chat.id);
-                            setIsSidebarOpen(false);
-                          }}
-                          className={`flex-1 text-left px-3 py-2.5 rounded-xl transition-all flex items-center gap-3 min-w-0
-                                ${activeSessionId === chat.id ? "text-white" : "text-gray-400 group-hover/item:text-white"}`}
-                        >
-                          <MessageCircle
-                            size={14}
-                            className={`shrink-0 ${activeSessionId === chat.id ? "text-treez-accent" : "text-gray-600 group-hover/item:text-gray-400"}`}
-                          />
-                          <div className="flex-1 truncate">
-                            <div className="truncate font-medium">
-                              {chat.title || "Untitled Chat"}
-                            </div>
-                            <div className="text-[10px] text-gray-600 truncate">
-                              {new Date(chat.updatedAt).toLocaleDateString()}
-                            </div>
-                          </div>
-                        </button>
-
-                        <button
-                          onClick={(e) => handleDeleteChat(e, chat.id)}
-                          className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-white/10 rounded-lg opacity-0 group-hover/item:opacity-100 transition-all shrink-0"
-                          title="Delete Chat"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
+            <RecentChats
+              activeSessionId={activeSessionId}
+              onSelectChat={handleSelectChat}
+              onDeleteChat={handleDeleteChat}
+              isCollapsed={isCollapsed}
+              refreshTrigger={chatSessionId}
+            />
           </div>
 
           {/* Sidebar Footer (User Info) */}
