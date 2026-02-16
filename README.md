@@ -31,6 +31,7 @@
 - [API Documentation](#-api-documentation)
 - [Project Structure](#-project-structure)
 - [Configuration](#-configuration)
+- [Troubleshooting](#-troubleshooting)
 - [Security](#-security)
 - [Contributing](#-contributing)
 - [License](#-license)
@@ -219,9 +220,34 @@ Before you begin, ensure you have the following installed:
    > ⚠️ **Important**: Never commit your `.env.local` file to version control!
 
 4. **Start the development servers**
+
+   You have **three options** to start the application:
+
+   **Option A: Run Both Servers Together (Recommended)**
    ```bash
    npm run dev
    ```
+   This will start both frontend and backend concurrently.
+
+   **Option B: Run Servers Separately**
+   
+   Open **two terminal windows**:
+   
+   Terminal 1 (Backend):
+   ```bash
+   npm run dev:server
+   ```
+   
+   Terminal 2 (Frontend):
+   ```bash
+   npm run dev:client
+   ```
+
+   **Option C: Windows Batch Files (Easy)**
+   
+   For Windows users, simply double-click:
+   - `start-server.bat` - Starts the backend
+   - `start-client.bat` - Starts the frontend
 
    This will start:
    - **Backend API** at `http://localhost:3001`
@@ -411,6 +437,9 @@ treez-intelligence/
 ├── .env.local                  # Environment variables (not committed)
 ├── .gitignore                  # Git ignore rules
 │
+├── start-server.bat            # Windows helper: Start backend
+├── start-client.bat            # Windows helper: Start frontend
+│
 ├── README.md                   # This file
 ├── SETUP_GUIDE.md              # Detailed setup instructions
 └── GITHUB_PUSH_INSTRUCTIONS.md # Git deployment guide
@@ -454,6 +483,71 @@ proxy: {
   }
 }
 ```
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues and Solutions
+
+#### Port 3001 Already in Use
+
+If you see an error that port 3001 is already in use, kill existing Node processes:
+
+**Windows (PowerShell):**
+```powershell
+Get-Process -Name node | Stop-Process -Force
+```
+
+**Linux/Mac:**
+```bash
+lsof -ti:3001 | xargs kill -9
+```
+
+#### API Key Warning
+
+If you see "Warning: GEMINI_API_KEY not found" in the console:
+
+1. Make sure you've created `.env.local` file in the root directory
+2. Ensure you've added your **actual** API key (not the placeholder text)
+3. Restart the backend server after updating `.env.local`
+
+Get your API key from: [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+
+#### Dependencies Missing
+
+If you encounter module not found errors:
+
+```bash
+npm install
+```
+
+If issues persist, delete `node_modules` and reinstall:
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+#### TypeScript Errors in IDE
+
+If your IDE shows TypeScript errors:
+
+1. Ensure dependencies are installed: `npm install`
+2. Restart the TypeScript language server in your IDE
+3. Close and reopen the project
+
+#### Frontend Can't Connect to Backend
+
+1. Verify the backend is running on port 3001
+2. Check that Vite proxy is configured correctly in `vite.config.ts`
+3. Clear browser cache and reload
+
+#### WebSocket Connection Failed
+
+1. Ensure backend server is running
+2. Check browser console for specific error messages
+3. Verify firewall isn't blocking WebSocket connections
 
 ---
 
